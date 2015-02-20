@@ -1,7 +1,7 @@
 #Logger for Ryu shim layer 
 
 The Logger for Ryu shim layer is one of the several tools which are provided in NetIDE project for diagnosing network problems. It is composed by two modules. The first one, called 'logpub' captures the messages exchanged between shim layer and backend and send them to a queue. The second one retrieves the messages and prints them into a terminal.
-RabbitMW is used in order to develop this tool.
+RabbitMQ is used in order to develop this tool.
 
 
 ## Installation
@@ -42,6 +42,7 @@ The 'logger.py' file could be placed where the user prefers.
 
 To test the logger this command is neccesary:
 * ```python logger.py```
+
 Note: the shim layer and the backend must be running properly.
 
 
