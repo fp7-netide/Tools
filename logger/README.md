@@ -40,6 +40,7 @@ The 'logger.py' file could be placed where the user prefers.
 Before executing the logger we must install 'pika' (The python library that implements AMQP 0-9-1 protocol). RabbitMQ server used AMQP protocol. Hence, in order to communicate the logger with RabbitMQ server it is necessary to use this library.
 
 * ```sudo pip install pika==0.9.8```
+
 The installation depends on pip and git-core packages, you may need to install them first.
 
 On Ubuntu:
