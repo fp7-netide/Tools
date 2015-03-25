@@ -37,6 +37,14 @@ To stop RabbitMQ server
 Second step is to replace the 'ryu_shim.py' which is in the ryu-shim folder by the new file 'ryu_shim.py' which is in the tools folder. Besides, the 'logpub.py' (you can find it in the tools folder) must be placed in 'ryu-shim' folder.
 The 'logger.py' file could be placed where the user prefers.
 
+Before executing the logger we must install 'pika' (The python library that implements AMQP 0-9-1 protocol). RabbitMQ server used AMQP protocol. Hence, in order to communicate the logger with RabbitMQ server it is necessary to use this library.
+
+* ```sudo pip install pika==0.9.8```
+The installation depends on pip and git-core packages, you may need to install them first.
+
+On Ubuntu:
+* ```sudo apt-get install python-pip git-core```
+
 
 ## Running
 
