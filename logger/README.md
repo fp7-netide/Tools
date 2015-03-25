@@ -45,6 +45,9 @@ The installation depends on pip and git-core packages, you may need to install t
 On Ubuntu:
 * ```sudo apt-get install python-pip git-core```
 
+On Debian:
+* ```sudo apt-get install python-setuptools git-core```
+* ```sudo easy_install pip```
 
 ## Running
 
