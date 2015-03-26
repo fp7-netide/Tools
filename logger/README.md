@@ -52,8 +52,14 @@ On Debian:
 
 ## Running
 
-To test the logger this command is neccesary:
+If you want to visualize the messages that are sent to the network (called 'out' messages) and the messages sent to the controller ('in' messages) you only have to type this command:
 * ```python logger.py```
+
+However if you want to observe 'in' messages:
+* ```python logger.py in```
+
+And in order to visualize 'out' messages:
+* ```python logger.py out```
 
 Note: the shim layer and the backend must be running properly.
 
