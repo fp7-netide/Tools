@@ -14,10 +14,8 @@ target/
 target-android/
 build/
 *.apk
-*.jar
 R.java
 *.dex
-*.dat
 *.lck
 *.ctrl
 
