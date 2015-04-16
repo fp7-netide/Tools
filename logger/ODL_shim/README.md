@@ -9,8 +9,8 @@ RabbitMQ is used in order to develop this tool.
 
 RabbitMQ uses Erlang in order to manage the broker. Installing Erlang in Ubuntu from the terminal:
 
-* sudo apt-get update
-* sudo apt-get install Erlang
+* ```sudo apt-get update```
+* ```sudo apt-get install Erlang```
 
 ###Second step is to install the RabbitMQ Server
 
@@ -27,18 +27,18 @@ To avoid warnings about unsigned packages, add our public key to your trusted ke
 
 Run:
 
-* apt-get update.
-Install packages as usual; for instance run the next command ,
+* ```apt-get update```
+Install packages as usual; for instance run the next command
 
-* sudo apt-get install rabbitmq-server
+* ```sudo apt-get install rabbitmq-server```
 
 ###Third step is to add the LogPub into ODL code
 
 Delete previous classes from Karaf
 One of the most important thing you have to do any time you recompile old-shim in order to use RabbitMQ is to delete everything in this folder: ~/NetIDE/openflowplugin/distribution/karaf/target/assembly/data$
 
-* cd ~/NetIDE/openflowplugin/distribution/karaf/target/assembly/data
-* rm -r -f *
+* ```cd ~/NetIDE/openflowplugin/distribution/karaf/target/assembly/data```
+* ```rm -r -f *```
 
 If you don’t do it, odl_shim will not be able to use rabbit once you recompile using
 maven.
@@ -60,31 +60,31 @@ These are the dependencies lines you have to add in the <dependencies></dependen
 	
 At this point we can compile the odl_shim project using maven as usual:
 
-* cd ~/NetIDE/Engine-development/odl-shim
-* mvn clean install
+* ```cd ~/NetIDE/Engine-development/odl-shim```
+* ```mvn clean install```
 
 
 ## Running
 
-### Running the RabbitMQ Server
-There are two scripts to launch both of rabbitmq-server and a basic listener in
-/listenerSimple:
-* launchRabbitServer.sh
-* launchRecvRabbit.sh 
+### Running the RabbitMQ Server and the listener
+You must copy the folder "/listenerSimple" (included its content) in your computer. Now you have two scripts to launch both of rabbitmq-server and a basic listener in /listenerSimple:
+
+* ```launchRabbitServer.sh``` (This starts the RabbitMQ server)
+* ```launchRecvRabbit.sh``` (This start the listener, "logger")
 
 ### Running the ODL Shim with the LogPub
 
 Run karaf:
 
-* cd ~/NetIDE/openflowplugin/distribution/karaf/target/assembly/bin
-* ./karaf
+* ```cd ~/NetIDE/openflowplugin/distribution/karaf/target/assembly/bin```
+* ```./karaf```
 
 And install the below bundles:
 
-* bundle:install -s mvn:com.googlecode.json-simple/json-simple/1.1.1
-* bundle:install -s mvn:org.apache.commons/commons-lang3/3.3.2
-* bundle:install -s mvn:com.rabbitmq/amqp-client/3.5.0
-* bundle:install -s mvn:org.opendaylight.openflowplugin/pyretic-odl/0.0.4-Helium-SR1.1
+* ```bundle:install -s mvn:com.googlecode.json-simple/json-simple/1.1.1```
+* ```bundle:install -s mvn:org.apache.commons/commons-lang3/3.3.2```
+* ```bundle:install -s mvn:com.rabbitmq/amqp-client/3.5.0```
+* ```bundle:install -s mvn:org.opendaylight.openflowplugin/pyretic-odl/0.0.4-Helium-SR1.1```
 
 ## TODO
 

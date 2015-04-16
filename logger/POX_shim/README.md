@@ -3,13 +3,16 @@
 The Logger for POX shim layer is one of the several tools which are provided in NetIDE project for diagnosing network problems. It is composed by two modules. The first one, called 'logpub' captures the messages exchanged between shim layer and backend and send them to a queue. The second one retrieves the messages and prints them into a terminal.
 RabbitMQ is used in order to develop this tool.
 
-![Alt text](/NetIDE-architecture.png?raw=true " ")
-
-##
-
 ## Installation
 
-First step is install RabbitMQ Server:
+###First step is to install the Erlang package
+
+RabbitMQ uses Erlang in order to manage the broker. Installing Erlang in Ubuntu from the terminal:
+
+* ```sudo apt-get update```
+* ```sudo apt-get install Erlang```
+
+###Second step is to install the RabbitMQ Server
 
 * Installing on Debian / Ubuntu 
 
@@ -27,18 +30,14 @@ deb http://www.rabbitmq.com/debian/ testing main
 Run:
 * ```apt-get update.```
 
-Install packages as usual; for instanceh run the next command ,
+Install packages as usual; for instance run the next command ,
 * ```sudo apt-get install rabbitmq-server```
 
+###Third step is to add the LogPub into POX code
 
-To start RabbitMQ server
-* ```invoke-rc.d rabbitmq-server start```
+Replace the 'pox_client.py' which is in the $HOME/NetIDE/pox/ext folder by the new file 'pox_client.py' which is in GitHub.
 
-To stop RabbitMQ server
-* ```invoke-rc.d rabbitmq-server stop```
-
-Second step is to replace the 'pox_client.py' which is in the $HOME/NetIDE/pox/ext folder by the new file 'pox_client.py' which is in this folder. Besides, the 'logpub.py' (you can find it in this folder) must be placed in $HOME/NetIDE/pox/ext folder.
-The 'logger.py' file could be placed where the user prefers.
+## Running
 
 Before executing the logger we must install 'pika' (The python library that implements AMQP 0-9-1 protocol). RabbitMQ server used AMQP protocol. Hence, in order to communicate the logger with RabbitMQ server it is necessary to use this library.
 
@@ -53,10 +52,11 @@ On Debian:
 * ```sudo apt-get install python-setuptools git-core```
 * ```sudo easy_install pip```
 
-## Running
+Now, you must copy the folder "/listenerSimple" (included its content) in your computer. Now you have two scripts to launch both of rabbitmq-server and a basic listener in /listenerSimple:
 
-If you want to visualize the messages that are sent between the Backend and the Shim you only have to type this command:
-* ```python logger.py```
+* ```launchRabbitServer.sh``` (This starts the RabbitMQ server)
+* ```launchRecvRabbit.sh``` (This start the listener, "logger")
+
 
 ## TODO
 
