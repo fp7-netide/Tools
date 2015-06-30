@@ -32,6 +32,12 @@ Install packages as usual; for instance run the next command
 
 * ```sudo apt-get install rabbitmq-server```
 
+To start RabbitMQ server
+* ```invoke-rc.d rabbitmq-server start```
+
+To stop RabbitMQ server
+* ```invoke-rc.d rabbitmq-server stop```
+
 ###Third step is to add the LogPub into ODL code
 
 Delete previous classes from Karaf
@@ -66,11 +72,10 @@ At this point we can compile the odl_shim project using maven as usual:
 
 ## Running
 
-### Running the RabbitMQ Server and the listener
-You must copy the folder "/listenerSimple" (included its content) in your computer. Now you have two scripts to launch both of rabbitmq-server and a basic listener in /listenerSimple:
+### Running the logger for ODL
+You must copy the folder "/listenerSimple" (included its content) in your computer. Now you have a scripts to launch the logger for ODL:
 
-* ```launchRabbitServer.sh``` (This starts the RabbitMQ server)
-* ```launchRecvRabbit.sh``` (This start the listener, "logger")
+* ```launch_logger.sh``` (This start the listener, "logger")
 
 ### Running the ODL Shim with the LogPub
 

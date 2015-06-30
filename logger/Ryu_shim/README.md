@@ -52,14 +52,15 @@ On Debian:
 
 ## Running
 
-If you want to visualize the messages that are sent to the network (called 'out' messages) and the messages sent to the controller ('in' messages) you only have to type this command:
+If you want to visualize the messages that are sent to the network (called '0' messages) and the messages sent to the controller ('1' messages) you only have to type this command:
 * ```python logger.py```
 
-However if you want to observe 'in' messages:
-* ```python logger.py in```
+However if you want to observe '1' messages:
+* ```python logger.py 1```
 
-And in order to visualize 'out' messages:
-* ```python logger.py out```
+And in order to visualize '0' messages:
+
+* ```python logger.py 0```
 
 Note: the shim layer and the backend must be running properly.
 

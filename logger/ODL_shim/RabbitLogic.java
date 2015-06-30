@@ -1,19 +1,3 @@
-/**
- * Copyright (c) 2014, NetIDE Consortium (Create-Net (CN), Telefonica Investigacion Y Desarrollo SA (TID), Fujitsu 
- * Technology Solutions GmbH (FTS), Thales Communications & Security SAS (THALES), Fundacion Imdea Networks (IMDEA),
- * Universitaet Paderborn (UPB), Intel Research & Innovation Ireland Ltd (IRIIL), Fraunhofer-Institut für 
- * Produktionstechnologie (IPT), Telcaria Ideas SL (TELCA) )
- *
- * All rights reserved. This program and the accompanying materials
- * are made available under the terms of the Eclipse Public License v1.0
- * which accompanies this distribution, and is available at
- * http://www.eclipse.org/legal/epl-v10.html
- *
- * Authors:
- *     	Rafael Leon Miranda
- *		Andres Beato Ollero
- */
-
 package com.telefonica.pyretic.backendchannel;
 
 import com.rabbitmq.client.ConnectionFactory;
@@ -29,7 +13,7 @@ Integrates rabbitmq functions in odl_shim
 
 public class RabbitLogic {
 
-  private final static String QUEUE_NAME = "qRabbitMQ";
+  private static final String EXCHANGE_NAME = "direct_logs";
 
 /*
 Creates a connection for use rabbit
@@ -59,6 +43,7 @@ return: a Channel object
     Channel channel = null;
 
       channel = conn.createChannel();
+      channel.exchangeDeclare(EXCHANGE_NAME, "direct");
 
     return channel;
   }
@@ -86,11 +71,11 @@ input:  Channel chann
         Connection conn
 return: none
 */
-  public void SendToRabbit (Channel chann, String msg, Connection conn)
+  public void SendToRabbit (Channel chann, String msg, Connection conn, String severity)
   {
     try{
-      chann.queueDeclare(QUEUE_NAME, false,false,false,null);
-      chann.basicPublish("",QUEUE_NAME,null,msg.getBytes());
+      chann.exchangeDeclare(EXCHANGE_NAME, "direct");
+      chann.basicPublish(EXCHANGE_NAME, severity, null, msg.getBytes("UTF-8"));
       closeAll(conn,chann);
     }
     catch (Exception e)

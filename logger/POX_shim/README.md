@@ -33,6 +33,12 @@ Run:
 Install packages as usual; for instance run the next command ,
 * ```sudo apt-get install rabbitmq-server```
 
+To start RabbitMQ server
+* ```invoke-rc.d rabbitmq-server start```
+
+To stop RabbitMQ server
+* ```invoke-rc.d rabbitmq-server stop```
+
 ###Third step is to add the LogPub into POX code
 
 Replace the 'pox_client.py' which is in the $HOME/NetIDE/pox/ext folder by the new file 'pox_client.py' which is in GitHub.
@@ -52,11 +58,17 @@ On Debian:
 * ```sudo apt-get install python-setuptools git-core```
 * ```sudo easy_install pip```
 
-Now, you must copy the folder "/listenerSimple" (included its content) in your computer. Now you have two scripts to launch both of rabbitmq-server and a basic listener in /listenerSimple:
+If you want to visualize the messages that are sent to the network (called 'out' messages) and the messages sent to the controller ('in' messages) you only have to type this command:
+* ```python logger.py```
 
-* ```launchRabbitServer.sh``` (This starts the RabbitMQ server)
-* ```launchRecvRabbit.sh``` (This start the listener, "logger")
+However if you want to observe '1' messages:
+* ```python logger.py 1```
 
+And in order to visualize '0' messages:
+
+* ```python logger.py 0```
+
+Note: the shim layer and the backend must be running properly.
 
 ## TODO
 

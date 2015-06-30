@@ -93,7 +93,7 @@ class BackendChannel(asynchat.async_chat):
         #print "ofclient collect incoming data"
         with self.of_client.channel_lock:
             self.received_data.append(data)
-
+	    sendtoRabbitMQ(str(data),channel_rmq,"0")
     def dict2OF(self,d):
         def convert(h,val):
             if h in ['srcmac','dstmac']:
@@ -112,10 +112,8 @@ class BackendChannel(asynchat.async_chat):
         """The end of a command or message has been seen."""
         with self.of_client.channel_lock:
             msg = deserialize(self.received_data)
-	    sendtoRabbitMQ(str(msg),channel_rmq)
-	    #print msg
-	    sendtoRabbitMQ("0",channel_rmq)
-
+	    #sendtoRabbitMQ(str(msg),channel_rmq,"out")
+	    
         # USE DESERIALIZED MSG
         if msg[0] == 'inject_discovery_packet':
             switch = msg[1]
@@ -290,8 +288,8 @@ class RYUClient(app_manager.RyuApp):
         try:
             with self.channel_lock:
                 self.backend_channel.push(serialized_msg)
-		sendtoRabbitMQ(serialized_msg,channel_rmq)
-		sendtoRabbitMQ("1",channel_rmq)
+		sendtoRabbitMQ(serialized_msg,channel_rmq,"1")
+		#sendtoRabbitMQ("1",channel_rmq)
 		
         except IndexError as e:
             print "ERROR PUSHING MESSAGE %s" % msg

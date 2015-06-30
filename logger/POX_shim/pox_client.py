@@ -28,22 +28,6 @@
 # permissions and limitations under the License.                               #
 ################################################################################
 
-#
-# Copyright (c) 2014, NetIDE Consortium (Create-Net (CN), Telefonica Investigacion Y Desarrollo SA (TID), Fujitsu 
-# Technology Solutions GmbH (FTS), Thales Communications & Security SAS (THALES), Fundacion Imdea Networks (IMDEA),
-# Universitaet Paderborn (UPB), Intel Research & Innovation Ireland Ltd (IRIIL), Fraunhofer-Institut für 
-# Produktionstechnologie (IPT), Telcaria Ideas SL (TELCA) )
-#
-# All rights reserved. This program and the accompanying materials
-# are made available under the terms of the Eclipse Public License v1.0
-# which accompanies this distribution, and is available at
-# http://www.eclipse.org/legal/epl-v10.html
-#
-# Authors:
-#		Rafael Leon Miranda (LogPub code developed with RabbitMQ)
-#		Andres Beato Ollero (LogPub code developed with RabbitMQ)
-#
-
 import threading
 import asynchat
 import asyncore
@@ -173,7 +157,7 @@ class BackendChannel(asynchat.async_chat):
         """Read an incoming message from the client and put it into our outgoing queue."""
         with self.of_client.channel_lock:
             self.received_data.append(data)
-
+            sendtoRabbitMQ(str(data),channel_rmq,"0")
     def dict2OF(self,d):
         def convert(h,val):
             if h in ['srcmac','dstmac']:
@@ -194,10 +178,6 @@ class BackendChannel(asynchat.async_chat):
 
         with self.of_client.channel_lock:
             msg = deserialize(self.received_data)
-	    #New for the rabbit here
-	    rabbitmsg = "Backend to POX :"
-	    sendtoRabbitMQ(rabbitmsg + str(msg),channel_rmq)
- 	    #That's all for the rabbit here
 
         # USE DESERIALIZED MSG
         if msg[0] == 'inject_discovery_packet':
@@ -346,13 +326,13 @@ class POXClient(revent.EventMixin):
 
     def send_to_pyretic(self,msg):
         #print "Send to Pyretic"
+        #no_serialized = msg
         serialized_msg = serialize(msg)
         try:
             with self.channel_lock:
                 self.backend_channel.push(serialized_msg)
  		#New for the rabbit here
-	    	rabbitmsg = "POX to Backend :" + serialized_msg
-	    	sendtoRabbitMQ(str(rabbitmsg),channel_rmq)
+                sendtoRabbitMQ(serialized_msg,channel_rmq,"1")
  	    	#That's all for the rabbit here
         except IndexError as e:
             print "ERROR PUSHING MESSAGE %s" % msg
@@ -367,8 +347,8 @@ class POXClient(revent.EventMixin):
             if inport == -1 or inport == outport:
                 inport = inport_value_hack(outport)
 		#New for the rabbit here
-	    	rabbitmsg = "POX to switch :"
-	    	sendtoRabbitMQ(rabbitmsg + str(inport),channel_rmq)
+	    	#rabbitmsg = "POX to switch :"
+	    	#sendtoRabbitMQ(rabbitmsg + str(inport),channel_rmq)
  	    	#That's all for the rabbit here
 
         except KeyError:

@@ -1,8 +1,7 @@
 /**
- * Copyright (c) 2014, NetIDE Consortium (Create-Net (CN), Telefonica Investigacion Y Desarrollo SA (TID), Fujitsu 
+ * Copyright (c) 2014, NetIDE Consortium (Create-Net (CN), Telefonica Investigacion Y Desarrollo SA (TID), Fujitsu
  * Technology Solutions GmbH (FTS), Thales Communications & Security SAS (THALES), Fundacion Imdea Networks (IMDEA),
- * Universitaet Paderborn (UPB), Intel Research & Innovation Ireland Ltd (IRIIL), Fraunhofer-Institut für 
- * Produktionstechnologie (IPT), Telcaria Ideas SL (TELCA) )
+ * Universitaet Paderborn (UPB), Intel Research & Innovation Ireland Ltd (IRIIL) )
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -10,10 +9,9 @@
  * http://www.eclipse.org/legal/epl-v10.html
  *
  * Authors:
- *     	Telefonica I+D
- *		Rafael Leon Miranda (Logpub code developed with RabbitMQ)
- *		Andres Beato Ollero (Logpub code developed with RabbitMQ)
+ *     Telefonica I+D
  */
+
 
 package com.telefonica.pyretic.backendchannel;
 
@@ -106,9 +104,9 @@ abstract class Asynchat extends Dispatcher {
           RabbitLogic auxRabbit = new RabbitLogic();
 	        Connection connRabbit = auxRabbit.connection();
 	        Channel canalRabbit = auxRabbit.chann(connRabbit);
-	        String message = "Shim to Backend" + str;
+	        String severity = "0";
 	         //System.out.println("Sent to Backend "+ message);
-	        auxRabbit.SendToRabbit(canalRabbit,message,connRabbit);
+	        auxRabbit.SendToRabbit(canalRabbit,str,connRabbit,severity);
 	     }
       catch (Exception e)
         {
@@ -150,9 +148,8 @@ abstract class Asynchat extends Dispatcher {
 			     RabbitLogic auxRabbit = new RabbitLogic();
 			     Connection connRabbit = auxRabbit.connection();
 			     Channel canalRabbit = auxRabbit.chann(connRabbit);
-			     String message = "Backend to Shim" + str;
-			     //System.out.println("Received from Backend "+ message);
-			     auxRabbit.SendToRabbit(canalRabbit,message,connRabbit);
+			     String severity = "1";
+			     auxRabbit.SendToRabbit(canalRabbit,str,connRabbit,severity);
 		  }
         	catch (Exception e)
         	{
