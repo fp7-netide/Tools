@@ -7,8 +7,10 @@ from generate_pcapfile import *
 
 from scapy.utils import wrpcap
 
-fo = open("results.txt", "wb")
-bitout = open("results.pcap", 'wb')
+#remove '/home/vagrant/debug_results/' if you are going to use this file outside of Eclipse
+
+fo = open("/home/vagrant/debug_results/results.txt", "wb")
+bitout = open("/home/vagrant/debug_results/results.pcap", 'wb')
 #msg = binascii.hexlify('hello')
 #port = 9600
 #message = (msg) 
