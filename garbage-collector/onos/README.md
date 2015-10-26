@@ -32,7 +32,7 @@ $ git clone https://github.com/fp7-netide/Tools.git
 
 Enter the project directory and compile the code:
 ```
-$ cd netide-gc-onos && mvn clean install -DskipTests
+$ cd garbage-collector/onos && mvn clean install -DskipTests
 ```
 
 
