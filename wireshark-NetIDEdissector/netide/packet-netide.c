@@ -6,16 +6,20 @@
 #include <stdio.h>
 #include <glib.h>
 
-#define NETIDE_PORT 41414
+#define NETIDE_PORT 5555
 
 static int proto_netide = -1;
 //static dissector_handle_t data_handle=NULL;
 static dissector_handle_t netide_handle;
 static dissector_handle_t openflow_v1_handle;
+//static dissector_handle_t openflow_handle;
+static dissector_handle_t data_handle;
 //void proto_register_netide(void);
 //void proto_reg_handoff_netide(void);
 static void dissect_netide(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree);
 
+static int hf_zmq_header = -1;
+//static int hf_zmq_packet = -1;
 static int hf_netide_ver = -1;
 static int hf_netide_type = -1;
 static int hf_netide_length = -1;
@@ -28,8 +32,9 @@ static gint ett_netide = -1;
 static const value_string packettypenames[] = {
     { 17, "NETIDE_OPENFLOW" },
     { 18, "NETIDE_NETCONF" },
-    { 19, "NETIDE_HELLO" },
-    { 20, "NETIDE_ERROR" },
+    { 1, "NETIDE_HELLO" },
+    { 2, "NETIDE_ERROR" },
+    { 3, "NETIDE_MGMT" },
     { 21, "NETIDE_OPFLEX" }
 };
 
@@ -40,6 +45,7 @@ dissect_netide(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree)
     gint offset = 0;
     int length, op_length;
     tvbuff_t *next_tvb;
+    guint8 type;
 //    guint8 type_temp, type;
 
 //    type_temp    = tvb_get_guint8(tvb, 2);
@@ -47,17 +53,19 @@ dissect_netide(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree)
     col_set_str(pinfo->cinfo, COL_PROTOCOL, "NETIDE");
     /* Clear out stuff in the info column */
     col_clear(pinfo->cinfo,COL_INFO);
-    col_add_fstr(pinfo->cinfo, COL_INFO, "%d -> %d ",
-             pinfo->srcport, pinfo->destport);
-
+    type = tvb_get_guint8(tvb, 3);
+    col_add_fstr(pinfo->cinfo, COL_INFO, "%d -> %d  NetIDE_Type: %s  ",
+             pinfo->srcport, pinfo->destport, val_to_str_const(type, packettypenames, "Unknown NetIDE message type"));
     length = tvb_length(tvb);
-
+//hay que coger la version del protocolo openflow tb y llamar a los diferentes dissector de cada version, no directamente al general, porque si llamamos al de openflow general machaca la vision del protocolo NetIDE
     if (tree) { /* we are being asked for details */
         proto_item *netide_item = NULL;
         proto_tree *netide_tree = NULL;
 
         netide_item = proto_tree_add_item(tree, proto_netide, tvb, 0, -1, ENC_NA);
         netide_tree = proto_item_add_subtree(netide_item, ett_netide);
+        proto_tree_add_item(netide_tree, hf_zmq_header, tvb, offset, 1, ENC_BIG_ENDIAN);
+        offset += 2;
         proto_tree_add_item(netide_tree, hf_netide_ver, tvb, offset, 1, ENC_BIG_ENDIAN);
         offset += 1;
         proto_tree_add_item(netide_tree, hf_netide_type, tvb, offset, 1, ENC_BIG_ENDIAN);
@@ -71,7 +79,12 @@ dissect_netide(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree)
         op_length = length-offset;
 //        next_tvb = tvb_new_subset(tvb, offset, length-offset, length-offset);
         next_tvb = tvb_new_subset(tvb, offset, op_length, op_length);
-        call_dissector(openflow_v1_handle, next_tvb, pinfo, netide_tree);
+        if (type == 17){
+            call_dissector(openflow_v1_handle, next_tvb, pinfo, netide_tree);
+        }
+        else{
+            call_dissector(data_handle, next_tvb, pinfo, netide_tree);
+        }
 //        proto_tree_add_item(netide_tree, hf_netide_openflow_msg, tvb, offset, -1, ENC_BIG_ENDIAN);
     }
 }
@@ -80,6 +93,12 @@ void proto_register_netide(void)
 {
 
     static hf_register_info hf[] = {
+        { &hf_zmq_header,
+            { "ZMQ header", "zmq.header",
+            FT_UINT16, BASE_HEX,
+            NULL, 0x0,
+            "ZMQ header", HFILL }
+        },
         { &hf_netide_ver,
             { "NETIDE Version", "netide.ver",
             FT_UINT8, BASE_HEX,
@@ -141,6 +160,8 @@ void proto_reg_handoff_netide(void)
     netide_handle = create_dissector_handle(dissect_netide, proto_netide);
     dissector_add_uint("tcp.port", NETIDE_PORT, netide_handle);
     openflow_v1_handle = find_dissector("openflow_v1");
+//    openflow_handle = find_dissector("openflow");
+    data_handle = find_dissector("data");
 /*    if (!initialized) {
         data_handle = find_dissector("data");
         netide_handle = create_dissector_handle(dissect_netide, proto_netide);
