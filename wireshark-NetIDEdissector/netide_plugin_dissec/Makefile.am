@@ -48,7 +48,7 @@ netide_la_LIBADD = @PLUGIN_LIBS@
 # Libs must be cleared, or else libtool won't create a shared module.
 # If your module needs to be linked against any particular libraries,
 # add them here.
-LIBS =
+LIBS = netide
 
 #
 # Build plugin.c, which contains the plugin version[] string, a

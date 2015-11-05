@@ -104,9 +104,11 @@ packet-netide.lo: packet-netide.c /usr/include/stdc-predef.h \
  ../../epan/dfilter/drange.h ../../register.h ../../ws_symbol_export.h \
  ../../epan/value_string.h ../../epan/frame_data.h \
  ../../epan/packet_info.h ../../epan/address.h ../../epan/column-utils.h \
- ../../epan/tfs.h packet-netide.h /usr/include/stdio.h \
- /usr/include/libio.h /usr/include/_G_config.h /usr/include/wchar.h \
- /usr/include/x86_64-linux-gnu/bits/stdio_lim.h \
+ ../../epan/tfs.h packet-netide.h ../../epan/dissectors/packet-tcp.h \
+ ../../epan/conversation.h ../../epan/packet.h ../../epan/prefs.h \
+ ../../color.h ../../epan/params.h ../../epan/range.h \
+ /usr/include/stdio.h /usr/include/libio.h /usr/include/_G_config.h \
+ /usr/include/wchar.h /usr/include/x86_64-linux-gnu/bits/stdio_lim.h \
  /usr/include/x86_64-linux-gnu/bits/sys_errlist.h \
  /usr/include/x86_64-linux-gnu/bits/stdio.h \
  /usr/include/x86_64-linux-gnu/bits/stdio2.h
@@ -408,6 +410,20 @@ packet-netide.lo: packet-netide.c /usr/include/stdc-predef.h \
 ../../epan/tfs.h:
 
 packet-netide.h:
+
+../../epan/dissectors/packet-tcp.h:
+
+../../epan/conversation.h:
+
+../../epan/packet.h:
+
+../../epan/prefs.h:
+
+../../color.h:
+
+../../epan/params.h:
+
+../../epan/range.h:
 
 /usr/include/stdio.h:
 

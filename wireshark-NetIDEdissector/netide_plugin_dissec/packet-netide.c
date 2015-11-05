@@ -1,17 +1,25 @@
 #include "config.h"
-
 #include <epan/packet.h>
 #include "packet-netide.h"
+#include <epan/dissectors/packet-tcp.h>
+#include <epan/prefs.h>
 #include <string.h>
 #include <stdio.h>
 #include <glib.h>
 
 #define NETIDE_PORT 5555
+#define OFP_VERSION_1_0 1
+#define OFP_VERSION_1_1 2
+#define OFP_VERSION_1_2 3
+#define OFP_VERSION_1_3 4
+#define OFP_VERSION_1_4 5
 
 static int proto_netide = -1;
 //static dissector_handle_t data_handle=NULL;
 static dissector_handle_t netide_handle;
 static dissector_handle_t openflow_v1_handle;
+static dissector_handle_t openflow_v4_handle;
+static dissector_handle_t openflow_v5_handle;
 //static dissector_handle_t openflow_handle;
 static dissector_handle_t data_handle;
 //void proto_register_netide(void);
@@ -24,6 +32,7 @@ static int hf_netide_ver = -1;
 static int hf_netide_type = -1;
 static int hf_netide_length = -1;
 static int hf_netide_xid = -1;
+static int hf_netide_module_id = -1;
 static int hf_netide_datapath_id = -1;
 //static int hf_netide_openflow_msg = -1;
 
@@ -42,10 +51,11 @@ static const value_string packettypenames[] = {
 static void
 dissect_netide(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree)
 {
-    gint offset = 0;
-    int length, op_length;
+    guint offset = 0;
+    guint length, op_length;
+//    guint16 length;
     tvbuff_t *next_tvb;
-    guint8 type;
+    guint8 type, of_version;
 //    guint8 type_temp, type;
 
 //    type_temp    = tvb_get_guint8(tvb, 2);
@@ -74,13 +84,31 @@ dissect_netide(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree)
         offset += 2;
         proto_tree_add_item(netide_tree, hf_netide_xid, tvb, offset, 4, ENC_BIG_ENDIAN);
         offset += 4;
+        proto_tree_add_item(netide_tree, hf_netide_module_id, tvb, offset, 4, ENC_BIG_ENDIAN);
+        offset += 4;
         proto_tree_add_item(netide_tree, hf_netide_datapath_id, tvb, offset, 8, ENC_BIG_ENDIAN);
         offset += 8;
+//        length = tvb_get_ntohs(tvb, offset);
         op_length = length-offset;
 //        next_tvb = tvb_new_subset(tvb, offset, length-offset, length-offset);
         next_tvb = tvb_new_subset(tvb, offset, op_length, op_length);
+//        call_dissector(data_handle, next_tvb, pinfo, netide_tree);
         if (type == 17){
-            call_dissector(openflow_v1_handle, next_tvb, pinfo, netide_tree);
+            of_version = tvb_get_guint8(next_tvb, 0);
+            switch(of_version){
+            case OFP_VERSION_1_0:
+                call_dissector(openflow_v1_handle, next_tvb, pinfo, netide_tree);
+                break;
+            case OFP_VERSION_1_3:
+                call_dissector(openflow_v4_handle, next_tvb, pinfo, netide_tree);
+                break;
+            case OFP_VERSION_1_4:
+                call_dissector(openflow_v5_handle, next_tvb, pinfo, netide_tree);
+                break;
+            default:
+                call_dissector(data_handle, next_tvb, pinfo, netide_tree);
+                break;
+            }
         }
         else{
             call_dissector(data_handle, next_tvb, pinfo, netide_tree);
@@ -123,6 +151,12 @@ void proto_register_netide(void)
             NULL, 0x0,
             "Xid", HFILL }
         },
+        { &hf_netide_module_id,
+            { "module_id", "netide.module_id",
+            FT_UINT32, BASE_DEC,
+            NULL, 0x0,
+            "module_id", HFILL }
+        },
         { &hf_netide_datapath_id,
             { "datapath_id", "netide.datapath_id",
             FT_UINT64, BASE_DEC,
@@ -155,13 +189,18 @@ void proto_register_netide(void)
 
 void proto_reg_handoff_netide(void)
 {
-//    static gboolean initialized=FALSE;
-
-    netide_handle = create_dissector_handle(dissect_netide, proto_netide);
-    dissector_add_uint("tcp.port", NETIDE_PORT, netide_handle);
-    openflow_v1_handle = find_dissector("openflow_v1");
+    static gboolean initialized=FALSE;
+    if (!initialized) {
+        netide_handle = create_dissector_handle(dissect_netide, proto_netide);
+        dissector_add_uint("tcp.port", NETIDE_PORT, netide_handle);
+        data_handle = find_dissector("data");
+        openflow_v1_handle = find_dissector("openflow_v1");
+        openflow_v4_handle = find_dissector("openflow_v4");
+        openflow_v5_handle = find_dissector("openflow_v5");
+    }
+//    openflow_v1_handle = find_dissector("openflow");
 //    openflow_handle = find_dissector("openflow");
-    data_handle = find_dissector("data");
+
 /*    if (!initialized) {
         data_handle = find_dissector("data");
         netide_handle = create_dissector_handle(dissect_netide, proto_netide);
