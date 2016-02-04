@@ -85,7 +85,7 @@ while True:
 #    print "-message " + str(msg) + "  received from " + device_id_str
     t=time.strftime("%H:%M:%S")
     if device_id_str[2:] == "shim":
-        print "dentro"
+        print "msg from shim"
         print '\033[1;32m[%r] [%r] %r\033[1;m'% (t, device_id_str, msg)
         fo.write("[%r] [%r] %r \n"% (t, device_id_str, msg));
         msg_cap = binascii.hexlify(msg)
@@ -100,7 +100,7 @@ while True:
         #print bytes
         bitout.write(bytes);
     else:
-        print "dentro2"
+        print "msg from backend"
         print '\033[1;33m[%r] [%r] %r\033[1;m'% (t, device_id_str, msg)
         fo.write("[%r] [%r] %r\n"% (t, device_id_str, msg));
         msg_cap = binascii.hexlify(msg)
