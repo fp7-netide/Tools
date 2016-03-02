@@ -5,14 +5,14 @@ The Debugger for NetIDE Core is one of the several tools which are provided in N
 
 ## Installation
 
-1. Install ZMQ libraries:
+1) Install ZMQ libraries:
 
 * Installing on Debian / Ubuntu 
 
-```sudo apt-get install python-pip python-dev python-repoze.lru libxml2-dev libxslt1-dev zlib1g-dev python-zmq python-scapy```
+⋅```sudo apt-get install python-pip python-dev python-repoze.lru libxml2-dev libxslt1-dev zlib1g-dev python-zmq python-scapy```
 (alternatively, you can install those with ```sudo pip install```)
 
-2. Recompile the wireshark sources to add our custom user class for the NetIDE protocol. To do so, copy ```packet-user_encap.c``` in the ```epan/dissectors/``` folder. And the recompile Wireshark with the following three commands:
+2) Recompile the wireshark sources to add our custom user class for the NetIDE protocol. To do so, copy ```packet-user_encap.c``` in the ```epan/dissectors/``` folder. And the recompile Wireshark with the following three commands:
 ```
 ./configure --prefix=$HOME/wireshark #to specify the location of the compiled Wireshark binary
 make
