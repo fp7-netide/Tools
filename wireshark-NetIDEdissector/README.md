@@ -53,7 +53,7 @@ RUN THE FOLLOWING TO SOLVE IT:
 * ```sudo ldconfig```
 
 ## Install NetIDE Wireshark Dissector
-We are going to install the NetIDE dissector as a plugin. To install the NetIDE dissector, you just need to copy the files ```netide.so``` and ```netide.la''' which you can find in this repository, in the lib folder of your wireshark installation. Normally the path of the plugin library for most wireshark installation from source code is /usr/local/lib/wireshark/plugins/1.12.x
+We are going to install the NetIDE dissector as a plugin. To install the NetIDE dissector, you just need to copy the files ```netide.so``` and ```netide.la``` which you can find in this repository, in the lib folder of your wireshark installation. Normally the path of the plugin library for most wireshark installation from source code is /usr/local/lib/wireshark/plugins/1.12.x
 
 
 ## TODO
