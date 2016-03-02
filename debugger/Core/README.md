@@ -9,7 +9,8 @@ First install ZMQ libraries:
 
 * Installing on Debian / Ubuntu 
 
-sudo apt-get install python-pip python-dev python-repoze.lru libxml2-dev libxslt1-dev zlib1g-dev python-zmq
+```sudo apt-get install python-pip python-dev python-repoze.lru libxml2-dev libxslt1-dev zlib1g-dev python-zmq python-scapy```
+(alternatively, you can install those with ```sudo pip install```)
 
 ## Running
 
