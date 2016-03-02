@@ -14,7 +14,7 @@ The current implementation of this Profiler is for Ryu Client Controller.
 
 ## Installation of the Application Profiler
 
-1. Install the R software. For this visit the [R-project](https://www.r-project.org/) web for more information.
+1) Install the R software. For this visit the [R-project](https://www.r-project.org/) web for more information.
 For example, in the case of Ubuntu 14.04 LTS, we first added the repo ```deb http://ftp.cixug.es/CRAN/bin/linux/ubuntu trusty/``` in the /etc/apt/sources.list file.
 And then we performed:
 ```
@@ -24,12 +24,12 @@ sudo apt-get install r-base
 This will install the latest version of R (otherwise, some packages might be missing and the visualization of data of the profiler might not work correctly)
 Note: If you obtain a GPG when trying to update apt-get, you might want to check this link: http://askubuntu.com/questions/13065/how-do-i-fix-the-gpg-error-no-pubkey which basically solves it by installing y-ppa-manager and then executing Advanced->Try to import all missing GPG keys
 
-2. Additionally, users who need to compile R packages from source [e.g. package maintainers, or anyone installing packages with install.packages()] should also install the r-base-dev package: ```sudo apt-get install r-base-dev``` (not needed for the profiler)
+2) Additionally, users who need to compile R packages from source [e.g. package maintainers, or anyone installing packages with install.packages()] should also install the r-base-dev package: ```sudo apt-get install r-base-dev``` (not needed for the profiler)
 
 Installation and compilation of R or some of its packages may require Ubuntu packages from the “backports” repositories. Therefore, it is suggested to activate the backports repositories with an entry like
 * ```deb https://<my.favorite.ubuntu.mirror>/ trusty-backports main restricted universe```
 
-3. Finally, install [RStudio](https://www.rstudio.com/). This is optionally, but helps for the visualization of the results.
+3) Finally, install [RStudio](https://www.rstudio.com/). This is optionally, but helps for the visualization of the results.
 
 ## Running the Application Profiler
 
