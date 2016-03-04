@@ -4,30 +4,31 @@ import sys
 import time
 import binascii
 from scapy.utils import wrpcap
+import argparse
 
 ###################### headers for pcap creation ####################################
 
 #Global header for pcap 2.4
-pcap_global_header =   ('D4 C3 B2 A1'   
-                        '02 00'         #File format major revision (i.e. pcap <2>.4)  
-                        '04 00'         #File format minor revision (i.e. pcap 2.<4>)   
-                        '00 00 00 00'     
-                        '00 00 00 00'     
-                        'FF FF 00 00'     
+pcap_global_header =   ('D4 C3 B2 A1'
+                        '02 00'         #File format major revision (i.e. pcap <2>.4)
+                        '04 00'         #File format minor revision (i.e. pcap 2.<4>)
+                        '00 00 00 00'
+                        '00 00 00 00'
+                        'FF FF 00 00'
                         '93 00 00 00') #user_protocol selected, without Ip and tcp headers
 
 #pcap packet header that must preface every packet
-pcap_packet_header =   ('AA 77 9F 47'     
-                        '90 A2 04 00'     
-                        'XX XX XX XX'   #Frame Size (little endian) 
+pcap_packet_header =   ('AA 77 9F 47'
+                        '90 A2 04 00'
+                        'XX XX XX XX'   #Frame Size (little endian)
                         'YY YY YY YY')  #Frame Size (little endian)
 
 #netide packet header that must preface every packet
 netide_header =   ('01'                 #netide protocol version 1.1
                    '11'                 #openflow type
-                   'XX XX'              #Frame Size (little endian) 
-                   '01 00 00 00'        #xid 
-                   '00 00 00 00 00 00 00 06') #datapath_id   
+                   'XX XX'              #Frame Size (little endian)
+                   '01 00 00 00'        #xid
+                   '00 00 00 00 00 00 00 06') #datapath_id
 
 ######################################################################################
 
@@ -36,7 +37,7 @@ def getByteLength(str1):
     return len(''.join(str1.split())) / 2
 #    return len(str1)
 
-def generatePCAP(message,i): 
+def generatePCAP(message,i):
 
     msg_len = getByteLength(message)
 #    netide = netide_header.replace('XX XX',"%04x"%msg_len)
@@ -67,8 +68,14 @@ def sum_one(i):
 
 ##############################################################################
 
-fo = open("results.txt", "wb")
-bitout = open("results.pcap", 'wb')
+parser = argparse.ArgumentParser(description='Launch the NetIDE debugger')
+parser.add_argument('-o', help='Output Folder', default=".")
+
+args = parser.parse_args()
+
+
+fo = open(args.o+"/results.txt", "wb")
+bitout = open(args.o+"/results.pcap", 'wb')
 #msg = binascii.hexlify('hello')
 
 # Socket to talk to server
@@ -95,7 +102,7 @@ while True:
         i = sum_one(i)
         #print bytestring
         bytelist = bytestring.split()
-        #print bytelist  
+        #print bytelist
         bytes = binascii.a2b_hex(''.join(bytelist))
         #print bytes
         bitout.write(bytes);
@@ -109,7 +116,7 @@ while True:
         i = sum_one(i)
         #print bytestring
         bytelist = bytestring.split()
-        #print bytelist  
+        #print bytelist
         bytes = binascii.a2b_hex(''.join(bytelist))
         #print bytes
         bitout.write(bytes);
