@@ -100,14 +100,8 @@ while True:
     decoded_header = NetIDEOps.netIDE_decode_header(msg)
     message_data = msg[NetIDEOps.NetIDE_Header_Size:]
     ret = bytearray(message_data)
-
-
-
     datapath = decoded_header[NetIDEOps.NetIDE_header['DPID']]
-    #msg_type = decoded_header[NetIDEOps.NetIDE_header['DPID']]
-    #msg_len = decoded_header[NetIDEOps.NetIDE_header['DPID']]
-    #xid = decoded_header[NetIDEOps.NetIDE_header['DPID']]
-    
+   
 
     if len(ret) >= ofproto_common.OFP_HEADER_SIZE:
        (version, msg_type, msg_len, xid) = ofproto_parser.header(ret)
@@ -127,7 +121,6 @@ while True:
     if device_id_str[2:] == "shim":
         if 'msg_decoded' in locals() or 'msg_decoded' in globals():
            print "msg from shim"
-           #print version
            print '\033[1;32m[%r] [%r] %r\033[1;m'% (t, device_id_str, msg_decoded)+'\n'
            #print ' '.join([str(ord(a)) for a in msg_str])
            #print ' '.join(unicode(a, "utf-8") for a in msg_str)
