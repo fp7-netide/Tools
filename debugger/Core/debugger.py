@@ -5,6 +5,20 @@ import time
 import binascii
 from scapy.utils import wrpcap
 
+sys.path.insert(0,'../../../Engine/libraries/netip/python/')
+sys.path.insert(0,'../../../ryu/ryu/')
+
+from netip import *
+from ofproto import ofproto_parser
+from ofproto import ofproto_common
+from ofproto import ofproto_protocol
+from ofproto import ofproto_v1_0, ofproto_v1_0_parser
+from ofproto import ofproto_v1_2, ofproto_v1_2_parser
+from ofproto import ofproto_v1_3, ofproto_v1_3_parser
+from ofproto import ofproto_v1_4, ofproto_v1_4_parser
+from ofproto import ofproto_v1_5, ofproto_v1_5_parser
+
+
 ###################### headers for pcap creation ####################################
 
 #Global header for pcap 2.4
@@ -77,16 +91,50 @@ socket = context.socket(zmq.SUB)
 socket.connect("tcp://localhost:5557")
 socket.setsockopt(zmq.SUBSCRIBE, "")
 i = 0
+
 print ' [*] Waiting for logs. To exit press CTRL+C'
 while True:
     device_id, msg = socket.recv_multipart()
     device_id_str = str(device_id)
     msg_str = str(msg)
-#    print "-message " + str(msg) + "  received from " + device_id_str
+    decoded_header = NetIDEOps.netIDE_decode_header(msg)
+    message_data = msg[NetIDEOps.NetIDE_Header_Size:]
+    ret = bytearray(message_data)
+
+
+
+    datapath = decoded_header[NetIDEOps.NetIDE_header['DPID']]
+    #msg_type = decoded_header[NetIDEOps.NetIDE_header['DPID']]
+    #msg_len = decoded_header[NetIDEOps.NetIDE_header['DPID']]
+    #xid = decoded_header[NetIDEOps.NetIDE_header['DPID']]
+    
+
+    if len(ret) >= ofproto_common.OFP_HEADER_SIZE:
+       (version, msg_type, msg_len, xid) = ofproto_parser.header(ret)
+       msg_decoded = ofproto_parser.msg(datapath, version, msg_type, msg_len, xid, ret)
+
+    #msg_decimal = []
+    #msg_ascii = []
+    #for a in msg:
+    #   msg_decimal.append(str(ord(a)))
+
+    #for a in msg_decimal:
+    #   msg_ascii.append(str(a))
+       #print str(a)+"\n"
+    # print "-message " + str(msg) + "  received from " + device_id_str
     t=time.strftime("%H:%M:%S")
+    #msg_decimal = convert_to_decimal(msg)
     if device_id_str[2:] == "shim":
-        print "msg from shim"
-        print '\033[1;32m[%r] [%r] %r\033[1;m'% (t, device_id_str, msg)
+        if 'msg_decoded' in locals() or 'msg_decoded' in globals():
+           print "msg from shim"
+           #print version
+           print '\033[1;32m[%r] [%r] %r\033[1;m'% (t, device_id_str, msg_decoded)+'\n'
+           #print ' '.join([str(ord(a)) for a in msg_str])
+           #print ' '.join(unicode(a, "utf-8") for a in msg_str)
+           #print ' '.join(a.decode('ascii') for a in msg)
+           #print binascii.hexlify(msg).decode("ascii")
+           #print ' '.join(a.decode('hex') for a in msg)
+           #print type(msg_str)
         fo.write("[%r] [%r] %r \n"% (t, device_id_str, msg));
         msg_cap = binascii.hexlify(msg)
         #global i
@@ -100,8 +148,9 @@ while True:
         #print bytes
         bitout.write(bytes);
     else:
-        print "msg from backend"
-        print '\033[1;33m[%r] [%r] %r\033[1;m'% (t, device_id_str, msg)
+        if 'msg_decoded' in locals() or 'msg_decoded' in globals():
+           print "msg from backend"
+           print '\033[1;33m[%r] [%r] %r\033[1;m'% (t, device_id_str, msg_decoded)+'\n'
         fo.write("[%r] [%r] %r\n"% (t, device_id_str, msg));
         msg_cap = binascii.hexlify(msg)
         #print i
