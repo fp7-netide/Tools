@@ -107,8 +107,6 @@ while True:
        (version, msg_type, msg_len, xid) = ofproto_parser.header(ret)
        msg_decoded = ofproto_parser.msg(datapath, version, msg_type, msg_len, xid, ret)
 
-    #msg_decimal = []
-    #msg_ascii = []
     #for a in msg:
     #   msg_decimal.append(str(ord(a)))
 
