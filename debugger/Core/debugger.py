@@ -112,9 +112,8 @@ while True:
 
     #for a in msg_decimal:
     #   msg_ascii.append(str(a))
-    # print "-message " + str(msg) + "  received from " + device_id_str
+    #print "-message " + str(msg) + "  received from " + device_id_str
     t=time.strftime("%H:%M:%S")
-    #msg_decimal = convert_to_decimal(msg)
     if device_id_str[2:] == "shim":
         if 'msg_decoded' in locals() or 'msg_decoded' in globals():
            print "msg from shim"
