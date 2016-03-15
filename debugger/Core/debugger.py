@@ -112,7 +112,6 @@ while True:
 
     #for a in msg_decimal:
     #   msg_ascii.append(str(a))
-       #print str(a)+"\n"
     # print "-message " + str(msg) + "  received from " + device_id_str
     t=time.strftime("%H:%M:%S")
     #msg_decimal = convert_to_decimal(msg)
