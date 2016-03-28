@@ -12,6 +12,7 @@ from netip import *
 from ofproto import ofproto_parser
 from ofproto import ofproto_common
 from ofproto import ofproto_protocol
+#from ofproto import ofproto_utils
 from ofproto import ofproto_v1_0, ofproto_v1_0_parser
 from ofproto import ofproto_v1_2, ofproto_v1_2_parser
 from ofproto import ofproto_v1_3, ofproto_v1_3_parser
@@ -97,15 +98,22 @@ while True:
     device_id, msg = socket.recv_multipart()
     device_id_str = str(device_id)
     msg_str = str(msg)
-    decoded_header = NetIDEOps.netIDE_decode_header(msg)
+    (netide_version, netide_msg_type, netide_msg_len, netide_xid, netide_mod_id, netide_datapath) = NetIDEOps.netIDE_decode_header(msg)
+    netide_msg_type_v2 = NetIDEOps.key_by_value(NetIDEOps.NetIDE_type, netide_msg_type)
     message_data = msg[NetIDEOps.NetIDE_Header_Size:]
     ret = bytearray(message_data)
-    datapath = decoded_header[NetIDEOps.NetIDE_header['DPID']]
+    #datapath = decoded_header[NetIDEOps.NetIDE_header['DPID']]
+    #xid_netide = decoded_header[NetIDEOps.NetIDE_header['XID']]
+    #mod_id = decoded_header[NetIDEOps.NetIDE_header['MOD_ID']]
    
 
     if len(ret) >= ofproto_common.OFP_HEADER_SIZE:
        (version, msg_type, msg_len, xid) = ofproto_parser.header(ret)
-       msg_decoded = ofproto_parser.msg(datapath, version, msg_type, msg_len, xid, ret)
+       msg_decoded = ofproto_parser.msg(netide_datapath, version, msg_type, msg_len, xid, ret)
+       #msg_type_v2 = 0
+       #if msg_type in ofproto_v1_0.ofp_type._members_ == True:
+          #msg_type_v2 = ofproto_v1_0.ofp_type._members_[msg_type]
+       #msg_header_decoded = (version, msg_type, msg_len, xid)
 
     #for a in msg:
     #   msg_decimal.append(str(ord(a)))
@@ -116,8 +124,14 @@ while True:
     t=time.strftime("%H:%M:%S")
     if device_id_str[2:] == "shim":
         if 'msg_decoded' in locals() or 'msg_decoded' in globals():
-           print "msg from shim"
-           print '\033[1;32m[%r] [%r] %r\033[1;m'% (t, device_id_str, msg_decoded)+'\n'
+           print "New message from shim %r at %r"%(device_id_str, t)
+           print "\033[1;32mNetIDE header: Version = %r, Type of msg = %r, Length = %r Bytes, XID = %r, Module ID = %r, Datapath = %r\033[1;m"% (netide_version, netide_msg_type_v2, netide_msg_len, netide_xid, netide_mod_id, netide_datapath)
+           print '\033[1;32mOpenFlow message header: Version = %r, Type of msg = %r, Length = %r Bytes, XID = %r\033[1;m'% (version, msg_type, msg_len, xid)
+           print '\033[1;32mOpenFlow message: %r \033[1;m'% (msg_decoded)
+           print "\n"
+
+           #print '\033[1;34m[%r] [%r] %r\033[1;m'% (xid_netide, mod_id, msg_header_decoded)+'\n'
+           #print mod_id           
            #print ' '.join([str(ord(a)) for a in msg_str])
            #print ' '.join(unicode(a, "utf-8") for a in msg_str)
            #print ' '.join(a.decode('ascii') for a in msg)
@@ -138,8 +152,12 @@ while True:
         bitout.write(bytes);
     else:
         if 'msg_decoded' in locals() or 'msg_decoded' in globals():
-           print "msg from backend"
-           print '\033[1;33m[%r] [%r] %r\033[1;m'% (t, device_id_str, msg_decoded)+'\n'
+           print "New message from backend %r at %r"%(device_id_str, t)
+           print "\033[1;36mNetIDE header: Version = %r, Type of msg = %r, Length = %r Bytes, XID = %r, Module ID = %r, Datapath = %r\033[1;m"% (netide_version, netide_msg_type_v2, netide_msg_len, netide_xid, netide_mod_id, netide_datapath)
+           print '\033[1;36mOpenFlow message header: Version = %r, Type of msg = %r, Length = %r Bytes, XID = %r\033[1;m'% (version, msg_type, msg_len, xid)
+           print '\033[1;36mOpenFlow message: %r \033[1;m'% (msg_decoded)
+           print "\n"
+           #print '\033[1;34m[%r] [%r] %r\033[1;m'% (xid_netide, mod_id, msg_header_decoded)+'\n'
         fo.write("[%r] [%r] %r\n"% (t, device_id_str, msg));
         msg_cap = binascii.hexlify(msg)
         #print i
