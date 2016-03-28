@@ -82,8 +82,14 @@ def sum_one(i):
 
 ##############################################################################
 
-fo = open("results.txt", "wb")
-bitout = open("results.pcap", 'wb')
+parser = argparse.ArgumentParser(description='Launch the NetIDE debugger')
+parser.add_argument('-o', help='Output Folder', default=".")
+
+args = parser.parse_args()
+
+
+fo = open(args.o+"/results.txt", "wb")
+bitout = open(args.o+"/results.pcap", 'wb')
 #msg = binascii.hexlify('hello')
 
 # Socket to talk to server
