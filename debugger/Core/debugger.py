@@ -93,7 +93,7 @@ args = parser.parse_args()
 fo = open(args.o+"/results.txt", "wb")
 bitout = open(args.o+"/results.pcap", 'wb')
 csvfile = open(args.o+"/results.card", "wb")
-fieldnames = ['timestamp', 'origin', 'destination', 'msg']
+fieldnames = ['timestamp', 'origin', 'destination', 'msg', 'length']
 writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
 writer.writeheader()
 #results = open(args.o+"/results.card", "wb")
@@ -142,7 +142,7 @@ while True:
            print '\033[1;32mOpenFlow message header: Version = %r, Type of msg = %r, Length = %r Bytes, XID = %r\033[1;m'% (version, msg_type, msg_len, xid)
            print '\033[1;32mOpenFlow message: %r \033[1;m'% (msg_decoded)
            print "\n"
-           writer.writerow({'timestamp':t, 'origin':device_id_str, 'destination':'NULL', 'msg':msg_decoded})
+           writer.writerow({'timestamp':t, 'origin':device_id_str, 'destination':'NULL', 'msg':msg_decoded, 'length':msg_len})
            #results.write("timestamp: %r,%r,%r,%r\n"% (t, device_id_str, "NULL", msg))
            #print '\033[1;34m[%r] [%r] %r\033[1;m'% (xid_netide, mod_id, msg_header_decoded)+'\n'
            #print mod_id           
@@ -171,7 +171,7 @@ while True:
            print '\033[1;36mOpenFlow message header: Version = %r, Type of msg = %r, Length = %r Bytes, XID = %r\033[1;m'% (version, msg_type, msg_len, xid)
            print '\033[1;36mOpenFlow message: %r \033[1;m'% (msg_decoded)
            print "\n"
-           writer.writerow({'timestamp':t, 'origin':device_id_str, 'destination':'NULL', 'msg':msg_decoded})
+           writer.writerow({'timestamp':t, 'origin':device_id_str, 'destination':'NULL', 'msg':msg_decoded, 'length':msg_len})
            #results.write("timestamp: %r,%r,%r,%r\n"% (t, device_id_str, "NULL", msg))
            #print '\033[1;34m[%r] [%r] %r\033[1;m'% (xid_netide, mod_id, msg_header_decoded)+'\n'
         fo.write("[%r] [%r] %r\n"% (t, device_id_str, msg));
