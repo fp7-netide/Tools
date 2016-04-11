@@ -108,9 +108,11 @@ i = 0
 
 print ' [*] Waiting for logs. To exit press CTRL+C'
 while True:
-    device_id, msg = socket.recv_multipart()
+    dst_id, device_id, msg = socket.recv_multipart()
     device_id_str = str(device_id)
     msg_str = str(msg)
+    dst_id = str(dst_id)
+ 
     (netide_version, netide_msg_type, netide_msg_len, netide_xid, netide_mod_id, netide_datapath) = NetIDEOps.netIDE_decode_header(msg)
     netide_msg_type_v2 = NetIDEOps.key_by_value(NetIDEOps.NetIDE_type, netide_msg_type)
     message_data = msg[NetIDEOps.NetIDE_Header_Size:]
@@ -137,12 +139,13 @@ while True:
     t=time.strftime("%H:%M:%S")
     if device_id_str[2:] == "shim":
         if 'msg_decoded' in locals() or 'msg_decoded' in globals():
-           print "New message from shim %r at %r"%(device_id_str, t)
+           print "New message from shim %r to %r at %r"%(device_id_str, dst_id, t)
            print "\033[1;32mNetIDE header: Version = %r, Type of msg = %r, Length = %r Bytes, XID = %r, Module ID = %r, Datapath = %r\033[1;m"% (netide_version, netide_msg_type_v2, netide_msg_len, netide_xid, netide_mod_id, netide_datapath)
            print '\033[1;32mOpenFlow message header: Version = %r, Type of msg = %r, Length = %r Bytes, XID = %r\033[1;m'% (version, msg_type, msg_len, xid)
            print '\033[1;32mOpenFlow message: %r \033[1;m'% (msg_decoded)
            print "\n"
-           writer.writerow({'timestamp':t, 'origin':device_id_str, 'destination':'NULL', 'msg':msg_decoded, 'length':msg_len})
+           writer.writerow({'timestamp':t, 'origin':device_id_str, 'destination':dst_id, 'msg':msg_decoded, 'length':msg_len})
+
            #results.write("timestamp: %r,%r,%r,%r\n"% (t, device_id_str, "NULL", msg))
            #print '\033[1;34m[%r] [%r] %r\033[1;m'% (xid_netide, mod_id, msg_header_decoded)+'\n'
            #print mod_id           
@@ -166,12 +169,12 @@ while True:
         bitout.write(bytes);
     else:
         if 'msg_decoded' in locals() or 'msg_decoded' in globals():
-           print "New message from backend %r at %r"%(device_id_str, t)
+           print "New message from backend %r to %r at %r"%(device_id_str, dst_id, t)
            print "\033[1;36mNetIDE header: Version = %r, Type of msg = %r, Length = %r Bytes, XID = %r, Module ID = %r, Datapath = %r\033[1;m"% (netide_version, netide_msg_type_v2, netide_msg_len, netide_xid, netide_mod_id, netide_datapath)
            print '\033[1;36mOpenFlow message header: Version = %r, Type of msg = %r, Length = %r Bytes, XID = %r\033[1;m'% (version, msg_type, msg_len, xid)
            print '\033[1;36mOpenFlow message: %r \033[1;m'% (msg_decoded)
            print "\n"
-           writer.writerow({'timestamp':t, 'origin':device_id_str, 'destination':'NULL', 'msg':msg_decoded, 'length':msg_len})
+           writer.writerow({'timestamp':t, 'origin':device_id_str, 'destination':dst_id, 'msg':msg_decoded, 'length':msg_len})
            #results.write("timestamp: %r,%r,%r,%r\n"% (t, device_id_str, "NULL", msg))
            #print '\033[1;34m[%r] [%r] %r\033[1;m'% (xid_netide, mod_id, msg_header_decoded)+'\n'
         fo.write("[%r] [%r] %r\n"% (t, device_id_str, msg));
