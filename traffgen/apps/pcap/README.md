@@ -2,7 +2,7 @@
 
 This tool is an application which takes .pcap files like those who can be found in .pcap repositories[1][2] or using an external tool like DCT²Gen[3], and create traces playable by a tool like tcpreplay[4].
 
-You can use the file _test.pcap_ and run _./producePCAP -t_ to produce three pcap files.
+You can use the file _test.pcap_ and run `./producePCAP -t` to produce three pcap files.
 
 ```
 Usage ./producePCAP -p <.pcap> -i <source IP> -m <source MAC> -f <host(s) file>
@@ -28,6 +28,9 @@ With host.txt:
 ## References
 
 [1] http://www.netresec.com/?page=PcapFiles
+
 [2] http://traces.cs.umass.edu/index.php/Network/Network
+
 [3] https://www-old.cs.uni-paderborn.de/en/research-group/research-group-computer-networks/people/dr-philip-wette/dct2gen.html
+
 [4] http://tcpreplay.appneta.com/
