@@ -9,6 +9,8 @@ This repository contains projects that will allow network application developers
 5. **Profiler**: judging the impact of network failures on the Network App behaviour
 6. **Debugger**: supports debug of packet processing (OFReplay, packet inspection and flow table checking)
 7. **Simulator**: used for quick prototyping and performance prediction
+8. **TrafficEmulator**: used with the _Emulator_ to generate realistic 
+traffic
 
 ![Alt text](/NetIDE-architecture-tools.png?raw=true " ")
 
