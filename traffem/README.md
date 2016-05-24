@@ -1,4 +1,4 @@
-# Traffic Generator
+# Traffic Emulator
 
 This tool is composed of applications which can be used to generate traffic for the Emulator.
 
