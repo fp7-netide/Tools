@@ -14,7 +14,6 @@ from netip import *
 from ofproto import ofproto_parser
 from ofproto import ofproto_common
 from ofproto import ofproto_protocol
-#from ofproto import ofproto_utils
 from ofproto import ofproto_v1_0, ofproto_v1_0_parser
 from ofproto import ofproto_v1_2, ofproto_v1_2_parser
 from ofproto import ofproto_v1_3, ofproto_v1_3_parser
@@ -105,13 +104,21 @@ socket = context.socket(zmq.SUB)
 socket.connect("tcp://localhost:5557")
 socket.setsockopt(zmq.SUBSCRIBE, "")
 i = 0
-
+#\x01\x06\x00
 print ' [*] Waiting for logs. To exit press CTRL+C'
 while True:
     dst_id, device_id, msg = socket.recv_multipart()
+    t=time.strftime("%H:%M:%S")
     device_id_str = str(device_id)
     msg_str = str(msg)
     dst_id = str(dst_id)
+    #print(len(msg))
+    msg_megane = binascii.hexlify(msg)
+    msg_megane_gt = msg_megane.decode("hex")
+    #print(len(msg_megane))
+    #print(len(int(msg_megane, 2)))
+    #msg_megane_gt = binascii.unhexlify('%x' % int(msg_megane, 2))
+    #msg_gt = binascii.unhexlify('%x' % n)
  
     (netide_version, netide_msg_type, netide_msg_len, netide_xid, netide_mod_id, netide_datapath) = NetIDEOps.netIDE_decode_header(msg)
     netide_msg_type_v2 = NetIDEOps.key_by_value(NetIDEOps.NetIDE_type, netide_msg_type)
@@ -136,26 +143,36 @@ while True:
     #for a in msg_decimal:
     #   msg_ascii.append(str(a))
     #print "-message " + str(msg) + "  received from " + device_id_str
-    t=time.strftime("%H:%M:%S")
+    
     if device_id_str[2:] == "shim":
         if 'msg_decoded' in locals() or 'msg_decoded' in globals():
            print "New message from shim %r to %r at %r"%(device_id_str, dst_id, t)
            print "\033[1;32mNetIDE header: Version = %r, Type of msg = %r, Length = %r Bytes, XID = %r, Module ID = %r, Datapath = %r\033[1;m"% (netide_version, netide_msg_type_v2, netide_msg_len, netide_xid, netide_mod_id, netide_datapath)
            print '\033[1;32mOpenFlow message header: Version = %r, Type of msg = %r, Length = %r Bytes, XID = %r\033[1;m'% (version, msg_type, msg_len, xid)
            print '\033[1;32mOpenFlow message: %r \033[1;m'% (msg_decoded)
+           #for char in msg:
+            #  print(char)
+           #print(type("xff\xff\xff\xff\xff\x"))
+           #print '\033[1;32mRaw message: %r \033[1;m'% (msg)
+           #print ' '.join(unicode(a, "utf-8") for a in msg)
+           #print binascii.hexlify(msg)
+           #print(type(binascii.hexlify(msg)))
+           #print msg_megane
+           #print(type(msg_megane))
            print "\n"
-           writer.writerow({'timestamp':t, 'origin':device_id_str, 'destination':dst_id, 'msg':msg_decoded, 'length':msg_len})
-
+           
+           writer.writerow({'timestamp':t, 'origin':device_id_str, 'destination':dst_id, 'msg':msg_megane, 'length':msg_len})
+           #csvfile.write("%r,%r,%r,%r,%r \n"% (t, device_id_str, dst_id, msg, msg_len))
            #results.write("timestamp: %r,%r,%r,%r\n"% (t, device_id_str, "NULL", msg))
            #print '\033[1;34m[%r] [%r] %r\033[1;m'% (xid_netide, mod_id, msg_header_decoded)+'\n'
            #print mod_id           
            #print ' '.join([str(ord(a)) for a in msg_str])
-           #print ' '.join(unicode(a, "utf-8") for a in msg_str)
+           #print ' '.join(unicode(a, "utf-8") for a in msg)
            #print ' '.join(a.decode('ascii') for a in msg)
            #print binascii.hexlify(msg).decode("ascii")
            #print ' '.join(a.decode('hex') for a in msg)
            #print type(msg_str)
-        fo.write("[%r] [%r] %r \n"% (t, device_id_str, msg));
+           fo.write("[%r] [%r] %r \n"% (t, device_id_str, msg_decoded))
         msg_cap = binascii.hexlify(msg)
         #global i
         #print i
@@ -166,18 +183,24 @@ while True:
         #print bytelist  
         bytes = binascii.a2b_hex(''.join(bytelist))
         #print bytes
-        bitout.write(bytes);
+        bitout.write(bytes)
     else:
         if 'msg_decoded' in locals() or 'msg_decoded' in globals():
            print "New message from backend %r to %r at %r"%(device_id_str, dst_id, t)
            print "\033[1;36mNetIDE header: Version = %r, Type of msg = %r, Length = %r Bytes, XID = %r, Module ID = %r, Datapath = %r\033[1;m"% (netide_version, netide_msg_type_v2, netide_msg_len, netide_xid, netide_mod_id, netide_datapath)
            print '\033[1;36mOpenFlow message header: Version = %r, Type of msg = %r, Length = %r Bytes, XID = %r\033[1;m'% (version, msg_type, msg_len, xid)
            print '\033[1;36mOpenFlow message: %r \033[1;m'% (msg_decoded)
+           #for char in msg:
+            #  print(char)
+           #print '\033[1;32mRaw message: %r \033[1;m'% (msg)
+           #print ' '.join(unicode(a, "utf-8") for a in msg)
+           #print binascii.hexlify(msg).decode("ascii")
            print "\n"
-           writer.writerow({'timestamp':t, 'origin':device_id_str, 'destination':dst_id, 'msg':msg_decoded, 'length':msg_len})
+           writer.writerow({'timestamp':t, 'origin':device_id_str, 'destination':dst_id, 'msg':msg_megane, 'length':msg_len})
+           #csvfile.write("%r,%r,%r,%r,%r \n"% (t, device_id_str, dst_id, msg, msg_len))
            #results.write("timestamp: %r,%r,%r,%r\n"% (t, device_id_str, "NULL", msg))
            #print '\033[1;34m[%r] [%r] %r\033[1;m'% (xid_netide, mod_id, msg_header_decoded)+'\n'
-        fo.write("[%r] [%r] %r\n"% (t, device_id_str, msg));
+           fo.write("[%r] [%r] %r \n"% (t, device_id_str, msg_decoded))
         msg_cap = binascii.hexlify(msg)
         #print i
         bytestring = generatePCAP(msg_cap,i)
@@ -187,7 +210,7 @@ while True:
         #print bytelist  
         bytes = binascii.a2b_hex(''.join(bytelist))
         #print bytes
-        bitout.write(bytes);
+        bitout.write(bytes)
 
 fo.close()
 bitout.close()
