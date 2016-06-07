@@ -1,11 +1,12 @@
 #!/usr/bin/env python
 import sys
 import time
+import zmq
+import csv
 
 sys.path.insert(0,'../../../Engine/libraries/netip/python/')
 sys.path.insert(0,'../../../ryu/ryu/')
 
-import csv
 from netip import *
 from ofproto import ofproto_parser
 from ofproto import ofproto_common
@@ -125,6 +126,15 @@ def print_list_address(address_list):
       print('MAC origen: %r, MAC destino: %r, Counter:%d, Timestamp: %r, Diff: %d')%(addr.src, addr.dst, addr.counter, addr.timestamp, addr.diff)
 
 
+def IDE_connection(message):
+   context = zmq.Context()
+   publisher = context.socket(zmq.PUB)
+   publisher.bind("tcp://127.0.0.1:5560")
+   netip_message = NetIDEOps.netIDE_encode('NETIDE_MGMT', 0, 0, 0, message)
+   time.sleep(1)
+   publisher.send(netip_message);
+
+
 def menu(module_list, address_list, loop):
    n = 23
    while (n != 0):
@@ -153,10 +163,12 @@ def menu(module_list, address_list, loop):
                if loop == True:
                   print('\033[1;31mYou are receiving multiple copies of the same ARP request. Maybe a loop might exist in your topology!\033[1;m')
                   print('\n')
+                  IDE_connection('You are receiving multiple copies of the same ARP request. Maybe a loop might exist in your topology.')
                   break
-            if loop == False:
+            if loop != True:
                print('\033[1;32mNo loops detected.\033[1;m')
                print('\n')
+               IDE_connection('No loops detected.')
 
       elif (n == 3):
          print_list_address(address_list)
