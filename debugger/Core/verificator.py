@@ -151,6 +151,7 @@ def menu(module_list, address_list, loop):
             for row in reader:
                module_identification(module_list, row['origin'], row['destination'], int(row['length'] or 0))
             print_module_list (module_list)
+            module_list = []
             print('\n')
            
       elif (n == 2):
@@ -161,11 +162,14 @@ def menu(module_list, address_list, loop):
                loop_detection(msg, row['timestamp'], address_list)
                loop = loop_detection_two(address_list)
                if loop == True:
+                  address_list = []
                   print('\033[1;31mYou are receiving multiple copies of the same ARP request. Maybe a loop might exist in your topology!\033[1;m')
                   print('\n')
                   IDE_connection('You are receiving multiple copies of the same ARP request. Maybe a loop might exist in your topology.')
                   break
             if loop != True:
+               #print('Mensajes = %d')%(address_list[0].counter)
+               address_list = []
                print('\033[1;32mNo loops detected.\033[1;m')
                print('\n')
                IDE_connection('No loops detected.')
