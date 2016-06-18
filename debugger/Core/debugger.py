@@ -89,10 +89,11 @@ parser.add_argument('-o', help='Output Folder', default=".")
 args = parser.parse_args()
 
 
-fo = open(args.o+"/results.txt", "wb")
+fo = open(args.o+"/results.txt", "w")
 bitout = open(args.o+"/results.pcap", 'wb')
-csvfile = open(args.o+"/results.card", "wb")
+csvfile = open(args.o+"/results.card", "w")
 fieldnames = ['timestamp', 'origin', 'destination', 'msg', 'length']
+#fieldnames = ['timestamp', 'origin', 'destination', 'msg']
 writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
 writer.writeheader()
 
@@ -103,7 +104,7 @@ socket.connect("tcp://localhost:5557")
 socket.setsockopt(zmq.SUBSCRIBE, "")
 i = 0
 
-print ' [*] Waiting for logs. To exit press CTRL+C'
+print('[*] Waiting for logs. To exit press CTRL+C')
 while True:
     dst_id, device_id, msg = socket.recv_multipart()
     t=time.strftime("%H:%M:%S")
@@ -111,47 +112,51 @@ while True:
     msg_str = str(msg)
     dst_id = str(dst_id)
     msg_hexadecimal = binascii.hexlify(msg)
-     
+
+
+
+    #msg_cap = binascii.hexlify(msg)
+    bytestring = generatePCAP(msg_hexadecimal,i)
+    i = sum_one(i)
+    bytelist = bytestring.split()
+    bytes = binascii.a2b_hex(''.join(bytelist))
+    bitout.write(bytes)
+    
+
+    
     (netide_version, netide_msg_type, netide_msg_len, netide_xid, netide_mod_id, netide_datapath) = NetIDEOps.netIDE_decode_header(msg)
     netide_msg_type_v2 = NetIDEOps.key_by_value(NetIDEOps.NetIDE_type, netide_msg_type)
     message_data = msg[NetIDEOps.NetIDE_Header_Size:]
     ret = bytearray(message_data)
+    writer.writerow({'timestamp':t, 'origin':device_id_str, 'destination':dst_id, 'msg':msg_hexadecimal, 'length':len(ret)})
 
     if len(ret) >= ofproto_common.OFP_HEADER_SIZE:
        (version, msg_type, msg_len, xid) = ofproto_parser.header(ret)
        msg_decoded = ofproto_parser.msg(netide_datapath, version, msg_type, msg_len, xid, ret)
+
+    elif len(ret) < ofproto_common.OFP_HEADER_SIZE:
+      (version, msg_type, msg_len, xid, msg_decoded) = ("", "", "", "", "")
     
     if device_id_str[2:] == "shim":
-        if 'msg_decoded' in locals() or 'msg_decoded' in globals():
-           print "New message from shim %r to %r at %r"%(device_id_str, dst_id, t)
-           print "\033[1;32mNetIDE header: Version = %r, Type of msg = %r, Length = %r Bytes, XID = %r, Module ID = %r, Datapath = %r\033[1;m"% (netide_version, netide_msg_type_v2, netide_msg_len, netide_xid, netide_mod_id, netide_datapath)
-           print '\033[1;32mOpenFlow message header: Version = %r, Type of msg = %r, Length = %r Bytes, XID = %r\033[1;m'% (version, msg_type, msg_len, xid)
-           print '\033[1;32mOpenFlow message: %r \033[1;m'% (msg_decoded)
-           print "\n"
-           writer.writerow({'timestamp':t, 'origin':device_id_str, 'destination':dst_id, 'msg':msg_hexadecimal, 'length':msg_len})
-           fo.write("[%r] [%r] %r \n"% (t, device_id_str, msg_decoded))
-        msg_cap = binascii.hexlify(msg)
-        bytestring = generatePCAP(msg_cap,i)
-        i = sum_one(i)
-        bytelist = bytestring.split()
-        bytes = binascii.a2b_hex(''.join(bytelist))
-        bitout.write(bytes)
-
+      #if 'msg_decoded' in locals() or 'msg_decoded' in globals():
+      print "New message from shim %r to %r at %r"%(device_id_str, dst_id, t)
+      print "\033[1;32mNetIDE header: Version = %r, Type of msg = %r, Length = %r Bytes, XID = %r, Module ID = %r, Datapath = %r\033[1;m"% (netide_version, netide_msg_type_v2, netide_msg_len, netide_xid, netide_mod_id, netide_datapath)
+      print '\033[1;32mOpenFlow message header: Version = %r, Type of msg = %r, Length = %r Bytes, XID = %r\033[1;m'% (version, msg_type, msg_len, xid)
+      print '\033[1;32mOpenFlow message: %r \033[1;m'% (msg_decoded)
+      print "\n"
+      #writer.writerow({'timestamp':t, 'origin':device_id_str, 'destination':dst_id, 'msg':msg_hexadecimal, 'length':msg_len})
+      fo.write("[%r] [%r] %r \n"% (t, device_id_str, msg_decoded))
     else:
-        if 'msg_decoded' in locals() or 'msg_decoded' in globals():
-           print "New message from backend %r to %r at %r"%(device_id_str, dst_id, t)
-           print "\033[1;36mNetIDE header: Version = %r, Type of msg = %r, Length = %r Bytes, XID = %r, Module ID = %r, Datapath = %r\033[1;m"% (netide_version, netide_msg_type_v2, netide_msg_len, netide_xid, netide_mod_id, netide_datapath)
-           print '\033[1;36mOpenFlow message header: Version = %r, Type of msg = %r, Length = %r Bytes, XID = %r\033[1;m'% (version, msg_type, msg_len, xid)
-           print '\033[1;36mOpenFlow message: %r \033[1;m'% (msg_decoded)
-           print "\n"
-           writer.writerow({'timestamp':t, 'origin':device_id_str, 'destination':dst_id, 'msg':msg_hexadecimal, 'length':msg_len})
-           fo.write("[%r] [%r] %r \n"% (t, device_id_str, msg_decoded))
-        msg_cap = binascii.hexlify(msg)
-        bytestring = generatePCAP(msg_cap,i)
-        i = sum_one(i)
-        bytelist = bytestring.split()
-        bytes = binascii.a2b_hex(''.join(bytelist))
-        bitout.write(bytes)
+      #if 'msg_decoded' in locals() or 'msg_decoded' in globals():
+      print "New message from backend %r to %r at %r"%(device_id_str, dst_id, t)
+      print "\033[1;36mNetIDE header: Version = %r, Type of msg = %r, Length = %r Bytes, XID = %r, Module ID = %r, Datapath = %r\033[1;m"% (netide_version, netide_msg_type_v2, netide_msg_len, netide_xid, netide_mod_id, netide_datapath)
+      print '\033[1;36mOpenFlow message header: Version = %r, Type of msg = %r, Length = %r Bytes, XID = %r\033[1;m'% (version, msg_type, msg_len, xid)
+      print '\033[1;36mOpenFlow message: %r \033[1;m'% (msg_decoded)
+      print "\n"
+      #writer.writerow({'timestamp':t, 'origin':device_id_str, 'destination':dst_id, 'msg':msg_hexadecimal, 'length':msg_len})
+      fo.write("[%r] [%r] %r \n"% (t, device_id_str, msg_decoded))
+
 
 fo.close()
 bitout.close()
+writer.close()
