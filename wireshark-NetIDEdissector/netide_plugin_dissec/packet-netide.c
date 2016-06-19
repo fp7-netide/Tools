@@ -26,7 +26,7 @@ static dissector_handle_t data_handle;
 //void proto_reg_handoff_netide(void);
 static void dissect_netide(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree);
 
-static int hf_zmq_header = -1;
+//static int hf_zmq_header = -1;
 //static int hf_zmq_packet = -1;
 static int hf_netide_ver = -1;
 static int hf_netide_type = -1;
@@ -46,13 +46,16 @@ static const value_string packettypenames[] = {
     { 4, "MODULE_ANNOUNCEMENT" },
     { 5, "MODULE_ACKNOWLEDGE" },
     { 6, "NETIDE_HEARTBEAT" },
+    { 7, "NETIDE_TOPOLOGY" },
+    { 8, "NETIDE_FENCE" },
     { 17, "NETIDE_OPENFLOW" },
     { 18, "NETIDE_NETCONF" },
     { 19, "NETIDE_OPFLEX" }
 };
 
 static const value_string netidever[] = {
-    { 3, "1.2"}
+    { 3, "1.2"},
+    { 4, "1.3"}
 };
 
 
@@ -71,19 +74,18 @@ dissect_netide(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree)
     col_set_str(pinfo->cinfo, COL_PROTOCOL, "NETIDE");
     /* Clear out stuff in the info column */
     col_clear(pinfo->cinfo,COL_INFO);
-    type = tvb_get_guint8(tvb, 3); //OJOOOOOOOOOOOOOOOO cuidado con los cambios aqui para dissector debugger y dissector core. son 3 y 1
+    type = tvb_get_guint8(tvb, 1); 
     col_add_fstr(pinfo->cinfo, COL_INFO, "%d -> %d  NetIDE_Type: %s  ",
              pinfo->srcport, pinfo->destport, val_to_str_const(type, packettypenames, "Unknown NetIDE message type"));
     length = tvb_length(tvb);
-//hay que coger la version del protocolo openflow tb y llamar a los diferentes dissector de cada version, no directamente al general, porque si llamamos al de openflow general machaca la vision del protocolo NetIDE
     if (tree) { /* we are being asked for details */
         proto_item *netide_item = NULL;
         proto_tree *netide_tree = NULL;
 
         netide_item = proto_tree_add_item(tree, proto_netide, tvb, 0, -1, ENC_NA);
         netide_tree = proto_item_add_subtree(netide_item, ett_netide);
-        proto_tree_add_item(netide_tree, hf_zmq_header, tvb, offset, 1, ENC_BIG_ENDIAN);
-        offset += 2;
+//        proto_tree_add_item(netide_tree, hf_zmq_header, tvb, offset, 1, ENC_BIG_ENDIAN);
+//        offset += 2;
         proto_tree_add_item(netide_tree, hf_netide_ver, tvb, offset, 1, ENC_BIG_ENDIAN);
         offset += 1;
         proto_tree_add_item(netide_tree, hf_netide_type, tvb, offset, 1, ENC_BIG_ENDIAN);
@@ -139,12 +141,12 @@ void proto_register_netide(void)
 {
 
     static hf_register_info hf[] = {
-        { &hf_zmq_header,
+/*        { &hf_zmq_header,
             { "ZMQ header", "zmq.header",
             FT_UINT16, BASE_HEX,
             NULL, 0x0,
             "ZMQ header", HFILL }
-        },
+        },*/
         { &hf_netide_ver,
             { "NETIDE Version", "netide.ver",
             FT_UINT8, BASE_HEX,
@@ -222,12 +224,4 @@ void proto_reg_handoff_netide(void)
         openflow_v4_handle = find_dissector("openflow_v4");
         openflow_v5_handle = find_dissector("openflow_v5");
     }
-//    openflow_v1_handle = find_dissector("openflow");
-//    openflow_handle = find_dissector("openflow");
-
-/*    if (!initialized) {
-        data_handle = find_dissector("data");
-        netide_handle = create_dissector_handle(dissect_netide, proto_netide);
-        dissector_add_uint("tcp.port", NETIDE_PORT, netide_handle);
-    }*/
 }
