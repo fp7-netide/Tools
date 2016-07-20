@@ -120,7 +120,7 @@ def loop_detection (msg, timestamp, address_list):
 
 def loop_detection_two(address_list):
    for addr in address_list:
-      if addr.counter / addr.diff  >= 100:
+      if addr.counter / addr.diff  >= 50:
          return True
 
 
