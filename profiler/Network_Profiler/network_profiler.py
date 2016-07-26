@@ -142,48 +142,63 @@ def OpenFlow_header():
 #The controller uses this message to query information about ports statistics. 160 bits or 20 bytes. Send a message for each port??? It seems yes.
 #The ! is for the order
 def port_stats():
+	stats_messages = []
 	format = '!BBHI3H6x'
 	#message = Header: struct.pack(format, version, type, length, xid) Payload:(type, flags (None), port_num, padx6)
 	message = struct.pack(format, 1, 16, 20, 76, 4, 0, 65535)
 	#netIDE_encode(type, xid, module_id, datapath_id, msg)
-	netip_message = NetIDEOps.netIDE_encode('NETIDE_OPENFLOW', 76, 0, 1, message)
-	return(netip_message)
+	for dpid in datapaths:
+		stats_messages.append(NetIDEOps.netIDE_encode('NETIDE_OPENFLOW', 76, 0, dpid, message))
+	
+	return(stats_messages)
 
 #The controller uses this message to query individual flow statistics.
 def flow_stats():
+	stats_messages = []
 	format = '!BBHI2HIH12BHBxHBB2xIIHHBxH'
 	#message = Header: struct.pack(format, version, type, length, xid) Payload:(type, flags (None), match (opcional), tableid, padx1, out_port)
 	message = struct.pack(format, 1, 16, 56, 77, 1, 0, 4194303, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 65535)
 	#netIDE_encode(type, xid, module_id, datapath_id, msg)
-	netip_message = NetIDEOps.netIDE_encode('NETIDE_OPENFLOW', 77, 0, 1, message)
-	return(netip_message)
+	for dpid in datapaths:
+		stats_messages.append(NetIDEOps.netIDE_encode('NETIDE_OPENFLOW', 77, 0, dpid, message))
+	
+	return(stats_messages)
 
 #The controller uses this message to query aggregate flow statistics.
 def aggregate_stats():
+	stats_messages = []
 	format = '!BBHI2HIH12BHBxHBB2xIIHHBxH'
 	#message = Header: struct.pack(format, version, type, length, xid) Payload:(type, flags (None), match (opcional), tableid, padx1, out_port)
 	message = struct.pack(format, 1, 16, 56, 78, 2, 0, 4194303, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 65535)
 	#netIDE_encode(type, xid, module_id, datapath_id, msg)
-	netip_message = NetIDEOps.netIDE_encode('NETIDE_OPENFLOW', 78, 0, 1, message)
-	return(netip_message)
+	for dpid in datapaths:
+		stats_messages.append(NetIDEOps.netIDE_encode('NETIDE_OPENFLOW', 78, 0, dpid, message))
+	
+	return(stats_messages)
 
 #The controller uses this message to query flow table statictics.
 def table_stats():
+	stats_messages = []
 	format = '!BBHI2H'
 	#message = Header: struct.pack(format, version, type, length, xid) Payload:(type, flags (None), match (opcional), tableid, padx1, out_port)
 	message = struct.pack(format, 1, 16, 12, 79, 3, 0)
 	#netIDE_encode(type, xid, module_id, datapath_id, msg)
-	netip_message = NetIDEOps.netIDE_encode('NETIDE_OPENFLOW', 79, 0, 1, message)
-	return(netip_message)
+	for dpid in datapaths:
+		stats_messages.append(NetIDEOps.netIDE_encode('NETIDE_OPENFLOW', 79, 0, dpid, message))
+	
+	return(stats_messages)
 
 #The controller uses this message to query queue statictics.
 def queue_stats():
+	stats_messages = []
 	format = '!BBHI3H2xI'
 	#message = Header: struct.pack(format, version, type, length, xid) Payload:(type, flags (None), port_number, padx2, queue_id)
 	message = struct.pack(format, 1, 16, 20, 80, 5, 0, 65535, 4294967295)
 	#netIDE_encode(type, xid, module_id, datapath_id, msg)
-	netip_message = NetIDEOps.netIDE_encode('NETIDE_OPENFLOW', 80, 0, 1, message)
-	return(netip_message)
+	for dpid in datapaths:
+		stats_messages.append(NetIDEOps.netIDE_encode('NETIDE_OPENFLOW', 80, 0, dpid, message))
+	
+	return(stats_messages)
 
 #The controller uses this message to query vendor switch features.
 """def vendor_stats():
@@ -220,6 +235,7 @@ def decode_sent_message(msg):
 
 def msg_parser (msg):
    msg_decoded = ""
+   global datapaths
    (netide_version, netide_msg_type, netide_msg_len, netide_xid, netide_mod_id, netide_datapath) = NetIDEOps.netIDE_decode_header(msg)
    message_data = msg[NetIDEOps.NetIDE_Header_Size:]
    ret = bytearray(message_data)
@@ -227,6 +243,13 @@ def msg_parser (msg):
       (version, msg_type, msg_len, xid) = ofproto_parser.header(ret)
       msg_decoded = ofproto_parser.msg(netide_datapath, version, msg_type, msg_len, xid, ret)
       #print(msg_decoded)
+      if str(msg_decoded).find("OFPSwitchFeatures", 0, len(str(msg_decoded))) != -1:
+      	datapath = msg_decoded.datapath
+      	#print(type(datapath))
+        if not datapath in datapaths:
+            datapaths.append(datapath)
+        
+        return (0, msg_decoded)
       if str(msg_decoded).find("OFPPortStatsReply", 0, len(str(msg_decoded))) != -1:
       	#print(msg_decoded)
       	#print(str(msg_decoded).find("OFPPortStatsReplay", 0, len(str(msg_decoded))))
@@ -245,7 +268,9 @@ def msg_parser (msg):
    	  return (0, msg_decoded)
 
       
-
+def print_datapath_array():
+    for dpid in datapaths:
+       print(dpid)
 
 def receive_messages():
    context = zmq.Context()
@@ -257,6 +282,7 @@ def receive_messages():
       destination, origin, msg = socket.recv_multipart()
       (stats_type_code, msg_decoded) = msg_parser(msg)
       #print(stats_type_code)
+      #print(msg_decoded)
       if stats_type_code == 1:
       	port_stats_reply_handler(msg_decoded)
       if stats_type_code == 2:
@@ -271,14 +297,15 @@ def receive_messages():
 
 
 
-message_netip = ""
+message_netip = []
+datapaths = []
 #openflow_message = ""
 #log = logging.getLogger()
 #log.addHandler(logging.StreamHandler(sys.stderr))
 
 thread.start_new_thread(receive_messages, ())
 while (n != 0):
-    time.sleep(0.5)
+    time.sleep(0.7)
     print("------ NETWORK PROFILER V.1.0 ------")
     print("1 -> Send message")
     print("2 -> Create port statistics message")
@@ -288,7 +315,7 @@ while (n != 0):
     print("6 -> Create flow aggregate statistics message")
     print("7 -> Create table statistics message")
     print("8 -> Create queue statistics message")
-    #print("9 -> Create vendor switch features message")
+    print("9 -> Print datapaths")
     print("0 -> Exit")    
     
     n=input("Choose an option: ")
@@ -296,15 +323,17 @@ while (n != 0):
 
     if (n == 1):
     	#send_msg(message_netip)
-    	context = zmq.Context()
-        publisher = context.socket(zmq.PUSH)
-        publisher.connect("tcp://127.0.0.1:5558")
-        publisher.send("1_shim", len("1_shim"), zmq.SNDMORE)
-        publisher.send(message_netip, len(message_netip), 0)
-       
+    	for msgs in message_netip:
+    		context = zmq.Context()
+    		publisher = context.socket(zmq.PUSH)
+    		publisher.connect("tcp://127.0.0.1:5558")
+    		publisher.send("1_shim", len("1_shim"), zmq.SNDMORE)
+    		publisher.send(msgs, len(msgs), 0)
+    		#zmq_close(publisher)      
     elif (n == 2):
        message_netip = port_stats()
-       print (message_netip)
+       for msgs in message_netip:
+       	print (msgs)       
 
     elif (n == 3):
        decode_sent_message(message_netip)
@@ -331,6 +360,5 @@ while (n != 0):
        message_netip = queue_stats()
        print (message_netip)
 
-    """elif (n == 9):
-       message_netip = vendor_stats()
-       print (message_netip)"""
+    elif (n == 9):
+       print_datapath_array()
