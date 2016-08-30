@@ -30,7 +30,7 @@ Note: the shim layer, the backend and the core must be running properly.
 
 To check the pcap file created by the Debugger, it necessary to use the Wireshark NetIDE dissector provided in this folder. Use the ```netide.la``` and the ```netide.so``` from this folder and use the readme in [tools/wireshark-NetIDEdissector](https://github.com/fp7-netide/Tools/tree/master/wireshark-NetIDEdissector) to install the dissector properly (which basically indicates that we need to copy those two files in the ```lib/wireshark/plugins/x.y.z``` of the Wireshark binary just compiled (where x.y.z is the specific version)).
 
-Finally, the first time we execute Wireshark we should also follow the instructions in https://wiki.wireshark.org/HowToDissectAnything to tell Wireshark how to decode our user link-layer header type. We do this by selecting ```Edit->Preferences->Protocols>DLT_USER->Edit Encapsulations Table``` and adding an entry for NetIDE, according to: https://www.wireshark.org/docs/wsug_html_chunked/ChUserDLTsSection.html
+Currently, the ```packet-user_encap.c``` automatically associates the DLT_USER0 type with the NetIDE protocol. If for some reason this does not work, the first time we execute Wireshark we should also follow the instructions in https://wiki.wireshark.org/HowToDissectAnything to tell Wireshark how to decode our user link-layer header type. We do this by selecting ```Edit->Preferences->Protocols>DLT_USER->Edit Encapsulations Table``` and adding an entry for NetIDE, according to: https://www.wireshark.org/docs/wsug_html_chunked/ChUserDLTsSection.html
 
 Example execution Wireshark loading a *.pcap file obstained by the debugger:
 ![alt text][debugger]
