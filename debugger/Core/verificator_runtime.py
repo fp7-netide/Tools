@@ -98,22 +98,25 @@ def loop_detection (msg, timestamp, address_list):
    if position != -1:
       pkt = packet.Packet(msg.data)
       eth = pkt.get_protocol(ethernet.ethernet)
-      if eth.ethertype == ether_types.ETH_TYPE_ARP:
-         dst = eth.dst
-         src = eth.src
-         if not address_list and dst == 'ff:ff:ff:ff:ff:ff':
-            address = Address(src, dst, 1, timestamp, 0)
-            address_list.append(address)
+      #if eth.ethertype == ether_types.ETH_TYPE_ARP:
+      dst = eth.dst
+      src = eth.src
+      if not address_list: #and dst == 'ff:ff:ff:ff:ff:ff':
+         address = Address(src, dst, 1, timestamp, 0)
+         address_list.append(address)
                         
-         else:
-            for addr in address_list:
-               if addr.src == src:
-                  is_in_list = True
-                  addr.counter = addr.counter + 1
-                  delta_time = datetime.strptime(timestamp, FMT) - datetime.strptime(addr.timestamp, FMT)
+      else:
+         for addr in address_list:
+            if addr.src == src and addr.dst == dst:
+               is_in_list = True
+               addr.counter = addr.counter + 1
+               delta_time = datetime.strptime(timestamp, FMT) - datetime.strptime(addr.timestamp, FMT)
+               if delta_time.seconds == 0:
+                  addr.diff = 1
+               else:
                   addr.diff= delta_time.seconds
-                  break
-            if is_in_list == False and dst == 'ff:ff:ff:ff:ff:ff':
+               break
+         if is_in_list == False: #and dst == 'ff:ff:ff:ff:ff:ff':
                address = Address(src, dst, 1, timestamp, 0)
                address_list.append(address)
 
@@ -155,7 +158,7 @@ def receive_messages(module_list, address_list):
 def menu(module_list, address_list, loop):
    n = 23
    while (n != 0):
-      print("------ VERIFICATOR V.1.0 ------")
+      print("------ VERIFICATOR V.2   .0 ------")
       print("1 -> Display information about NetIDE Engine.")
       print("2 -> Show if there is a loop in the topology.")
       print("0 -> Exit")
@@ -171,9 +174,9 @@ def menu(module_list, address_list, loop):
          loop = loop_detection_two(address_list)
          if loop == True:
             #address_list = []
-            print('\033[1;31mYou are receiving multiple copies of the same ARP request. Maybe a loop might exist in your topology!\033[1;m')
+            print('\033[1;31mYou are receiving multiple copies of the same message. Maybe a loop might exist in your topology!\033[1;m')
             print('\n')
-            IDE_connection('You are receiving multiple copies of the same ARP request. Maybe a loop might exist in your topology.')
+            IDE_connection('You are receiving multiple copies of the same message. Maybe a loop might exist in your topology.')
             
          if loop != True:
             #print('Mensajes = %d')%(address_list[0].counter)
