@@ -21,6 +21,7 @@ import sys
 import logging
 import sys
 import thread
+import json
 
 sys.path.insert(0,'../../../Engine/libraries/netip/python/')
 
@@ -40,10 +41,10 @@ def start():
 def send_msg(message):
    context = zmq.Context()
    publisher = context.socket(zmq.PUSH)
-   publisher.bind("tcp://localhost:5558")
+   publisher.bind("tcp://127.0.0.1:5558")
    publisher.send(message)
 
-def port_stats_reply_handler(msg):
+def port_stats_reply_handler(msg, netide_datapath):
    #ofp = msg.datapath.ofproto
    body = msg.body
    #print(body[0])
@@ -55,7 +56,8 @@ def port_stats_reply_handler(msg):
 
    
    ports = []
-   #Para cada switch
+   stat_message = []
+   #For each port
    for stat in body:
       ports.append('port_no=%d '
 	               'rx_packets=%d tx_packets=%d '
@@ -71,16 +73,25 @@ def port_stats_reply_handler(msg):
 	                stat.rx_errors, stat.tx_errors,
 	                stat.rx_frame_err, stat.rx_over_err,
 	                stat.rx_crc_err, stat.collisions))
+      json_stats = {"Type":"Port Stats"}, {"dpid": netide_datapath}, {"port":stat.port_no}, {"rx_packets": stat.rx_packets}, {"tx_packets": stat.tx_packets}, {"rx_bytes": stat.rx_bytes}, {"tx_bytes": stat.tx_bytes}, {"rx_dropped": stat.rx_dropped}, {"tx_dropped": stat.tx_dropped}, {"rx_errors": stat.rx_errors}, {"tx_errors": stat.tx_errors}, {"rx_frame_err": stat.rx_frame_err}, {"rx_over_err": stat.rx_over_err}, {"rx_crc_err": stat.rx_crc_err}, {"collisions": stat.collisions}
+      stats = json.dumps(json_stats)
+      stat_message.append(stats)
+      #IDE_connection(stats)
    #print (ports[0].tx_bytes)
 
    print'\033[1;32m PortStats: %s \033[1;m'%(ports)
+   print('\n')
+   IDE_connection(json.dumps(stat_message))
+   
    
 
 
 
-def flow_stats_reply_handler(msg):
+def flow_stats_reply_handler(msg, netide_datapath):
     body = msg.body
     flows = []
+    stat_message = []
+
     for stat in body:
         flows.append('table_id=%s match=%s '
                      'duration_sec=%d duration_nsec=%d '
@@ -90,16 +101,24 @@ def flow_stats_reply_handler(msg):
                      'actions=%s' %
                      (stat.table_id, stat.match, stat.duration_sec, stat.duration_nsec, stat.priority, stat.idle_timeout, stat.hard_timeout,
                      stat.cookie, stat.packet_count, stat.byte_count, stat.actions))
+        json_stats = {"Type":"Flow Stats"}, {"dpid": netide_datapath}, {"table_id": stat.table_id}, {"duration_sec": stat.duration_sec}, {"duration_nsec": stat.duration_nsec}, {"priority": stat.priority}, {"idle_timeout": stat.idle_timeout}, {"hard_timeout": stat.hard_timeout}, {"cookie": stat.cookie}, {"packet_count": stat.packet_count}, {"byte_count": stat.byte_count}
+        stats = json.dumps(json_stats)
+        stat_message.append(stats)
+
     print'\033[1;36m FlowStats: %s \033[1;m'%(flows)
     print('\n')
+    IDE_connection(json.dumps(stat_message))
 
 
 
-def aggregate_stats_reply_handler(msg):
+def aggregate_stats_reply_handler(msg, netide_datapath):
     body = msg.body
+    json_stats = {"Type":"Aggregate Stats"}, {"dpid": netide_datapath}, {"packet_count": body[0].packet_count}, {"byte_count": body[0].byte_count}, {"flow_count": body[0].flow_count}
+    stats = json.dumps(json_stats)
 
     print'\033[1;34m AggregateStats: packet_count=%d, byte_count=%d, flow_count=%d\033[1;m'%(body[0].packet_count, body[0].byte_count, body[0].flow_count)
     print('\n')
+    IDE_connection(json.dumps(stats))
 
 
 
@@ -209,6 +228,14 @@ def queue_stats():
 	netip_message = NetIDEOps.netIDE_encode('NETIDE_OPENFLOW', 81, 0, 1, message)
 	return(netip_message)"""
 
+def IDE_connection(message):
+  context = zmq.Context()
+  publisher = context.socket(zmq.PUB)
+  publisher.bind("tcp://127.0.0.1:5561")
+  netip_message = NetIDEOps.netIDE_encode('NETIDE_MGMT', 0, 0, 0, message)
+  time.sleep(0.2)
+  publisher.send(netip_message);
+
 def packet_in_msg():
 	format = '!BBHIIHHBx6B'
 	#message = struct.pack(format, 1, 16, 20, xid, 4, None, port_num, None, None, None, None, None, None)
@@ -249,23 +276,23 @@ def msg_parser (msg):
         if not datapath in datapaths:
             datapaths.append(datapath)
         
-        return (0, msg_decoded)
+        return (0, msg_decoded, netide_datapath)
       if str(msg_decoded).find("OFPPortStatsReply", 0, len(str(msg_decoded))) != -1:
       	#print(msg_decoded)
       	#print(str(msg_decoded).find("OFPPortStatsReplay", 0, len(str(msg_decoded))))
-      	return (1, msg_decoded)
+      	return (1, msg_decoded, netide_datapath)
       if str(msg_decoded).find("OFPFlowStatsReply", 0, len(str(msg_decoded))) != -1:
-      	return (2, msg_decoded)
+      	return (2, msg_decoded, netide_datapath)
       if str(msg_decoded).find("OFPAggregateStatsReply", 0, len(str(msg_decoded))) != -1:
-      	return (3, msg_decoded)
+      	return (3, msg_decoded, netide_datapath)
       if str(msg_decoded).find("OFPQueueStatsReply", 0, len(str(msg_decoded))) != -1:
-      	return (4, msg_decoded)
+      	return (4, msg_decoded, netide_datapath)
       if str(msg_decoded).find("OFPTableStatsReply", 0, len(str(msg_decoded))) != -1:
-      	return (5, msg_decoded)
+      	return (5, msg_decoded, netide_datapath)
       else:
-      	return (0, msg_decoded)
+      	return (0, msg_decoded, netide_datapath)
    else:
-   	  return (0, msg_decoded)
+   	  return (0, msg_decoded, netide_datapath)
 
       
 def print_datapath_array():
@@ -275,20 +302,20 @@ def print_datapath_array():
 def receive_messages():
    context = zmq.Context()
    socket = context.socket(zmq.SUB)
-   socket.connect("tcp://localhost:5557")
+   socket.connect("tcp://127.0.0.1:5557")
    socket.setsockopt(zmq.SUBSCRIBE, "")
 
    while True:
       destination, origin, msg = socket.recv_multipart()
-      (stats_type_code, msg_decoded) = msg_parser(msg)
+      (stats_type_code, msg_decoded, netide_datapath) = msg_parser(msg)
       #print(stats_type_code)
       #print(msg_decoded)
       if stats_type_code == 1:
-      	port_stats_reply_handler(msg_decoded)
+      	port_stats_reply_handler(msg_decoded, netide_datapath)
       if stats_type_code == 2:
-      	flow_stats_reply_handler(msg_decoded)
+      	flow_stats_reply_handler(msg_decoded, netide_datapath)
       if stats_type_code == 3:
-      	aggregate_stats_reply_handler(msg_decoded)
+      	aggregate_stats_reply_handler(msg_decoded, netide_datapath)
       if stats_type_code == 4:
       	queue_stats_reply_handler(msg_decoded)
       if stats_type_code == 5:
