@@ -51,7 +51,23 @@ class Address(object):
       self.diff = diff
 
 
-def module_identification(module_list, origin, destination, length):
+def module_identification(module_list, src_field, length):
+   if src_field.startswith("0_", 0, 2) == True:
+      origin = src_field[2:]
+      destination = "core"
+
+   elif src_field.startswith("1_", 0, 2) == True:
+      origin = src_field[2:]
+      destination = "core"
+
+   elif src_field.startswith("2_", 0, 2) == True:
+      origin = "core"
+      destination = src_field[2:]
+
+   elif src_field.startswith("3_", 0, 2) == True:
+      origin = "core"
+      destination = src_field[2:]
+
    if not module_list:
       module = Module(origin, destination, length, length, length, 1)
       module_list.append(module)
@@ -147,10 +163,10 @@ def receive_messages(module_list, address_list):
    socket.setsockopt(zmq.SUBSCRIBE, "")
 
    while True:
-      destination, origin, msg = socket.recv_multipart()
+      dst_field, src_field, msg = socket.recv_multipart()
       timestamp=time.strftime("%H:%M:%S")
       (msg_decoded, length) = msg_parser(msg)
-      module_identification(module_list, origin, destination, length)
+      module_identification(module_list, src_field, length)
       loop_detection(msg_decoded, timestamp, address_list)
             
 
@@ -158,7 +174,7 @@ def receive_messages(module_list, address_list):
 def menu(module_list, address_list, loop):
    n = 23
    while (n != 0):
-      print("------ VERIFICATOR V.2   .0 ------")
+      print("------ VERIFICATOR V.2.0 ------")
       print("1 -> Display information about NetIDE Engine.")
       print("2 -> Show if there is a loop in the topology.")
       print("0 -> Exit")
