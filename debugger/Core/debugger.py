@@ -106,13 +106,31 @@ i = 0
 
 print('[*] Waiting for logs. To exit press CTRL+C')
 while True:
-    dst_id, device_id, msg = socket.recv_multipart()
+    dst_field, src_field, msg = socket.recv_multipart()
     t=time.strftime("%H:%M:%S")
-    device_id_str = str(device_id)
+    dst_field = str(dst_field)
     msg_str = str(msg)
-    dst_id = str(dst_id)
+    src_field = str(src_field)
     msg_hexadecimal = binascii.hexlify(msg)
 
+    #print(src_field, dst_field)
+
+
+    if src_field.startswith("0_", 0, 2) == True:
+      origin = src_field[2:]
+      destination = "core"
+
+    elif src_field.startswith("1_", 0, 2) == True:
+      origin = src_field[2:]
+      destination = "core"
+
+    elif src_field.startswith("2_", 0, 2) == True:
+      origin = "core"
+      destination = src_field[2:]
+
+    elif src_field.startswith("3_", 0, 2) == True:
+      origin = "core"
+      destination = src_field[2:]
 
 
     #msg_cap = binascii.hexlify(msg)
@@ -128,7 +146,7 @@ while True:
     netide_msg_type_v2 = NetIDEOps.key_by_value(NetIDEOps.NetIDE_type, netide_msg_type)
     message_data = msg[NetIDEOps.NetIDE_Header_Size:]
     ret = bytearray(message_data)
-    writer.writerow({'timestamp':t, 'origin':device_id_str, 'destination':dst_id, 'msg':msg_hexadecimal, 'length':len(ret)})
+    writer.writerow({'timestamp':t, 'origin':origin, 'destination':destination, 'msg':msg_hexadecimal, 'length':len(ret)})
 
     if len(ret) >= ofproto_common.OFP_HEADER_SIZE:
        (version, msg_type, msg_len, xid) = ofproto_parser.header(ret)
@@ -137,24 +155,24 @@ while True:
     elif len(ret) < ofproto_common.OFP_HEADER_SIZE:
       (version, msg_type, msg_len, xid, msg_decoded) = ("", "", "", "", "")
     
-    if device_id_str[2:] == "shim":
+    #if dst_field[2:] == "shim":
       #if 'msg_decoded' in locals() or 'msg_decoded' in globals():
-      print "New message from shim %r to %r at %r"%(device_id_str, dst_id, t)
-      print "\033[1;32mNetIDE header: Version = %r, Type of msg = %r, Length = %r Bytes, XID = %r, Module ID = %r, Datapath = %r\033[1;m"% (netide_version, netide_msg_type_v2, netide_msg_len, netide_xid, netide_mod_id, netide_datapath)
-      print '\033[1;32mOpenFlow message header: Version = %r, Type of msg = %r, Length = %r Bytes, XID = %r\033[1;m'% (version, msg_type, msg_len, xid)
-      print '\033[1;32mOpenFlow message: %r \033[1;m'% (msg_decoded)
-      print "\n"
-      #writer.writerow({'timestamp':t, 'origin':device_id_str, 'destination':dst_id, 'msg':msg_hexadecimal, 'length':msg_len})
-      fo.write("[%r] [%r] %r \n"% (t, device_id_str, msg_decoded))
-    else:
+    print "New message from %r to %r at %r"%(origin, destination, t)
+    print "\033[1;32mNetIDE header: Version = %r, Type of msg = %r, Length = %r Bytes, XID = %r, Module ID = %r, Datapath = %r\033[1;m"% (netide_version, netide_msg_type_v2, netide_msg_len, netide_xid, netide_mod_id, netide_datapath)
+    print '\033[1;32mOpenFlow message header: Version = %r, Type of msg = %r, Length = %r Bytes, XID = %r\033[1;m'% (version, msg_type, msg_len, xid)
+    print '\033[1;32mOpenFlow message: %r \033[1;m'% (msg_decoded)
+    print "\n"
+      #writer.writerow({'timestamp':t, 'origin':dst_field, 'destination':src_field, 'msg':msg_hexadecimal, 'length':msg_len})
+    fo.write("[%r] [%r] [%r] %r \n"% (t, origin, destination, msg_decoded))
+    #else:
       #if 'msg_decoded' in locals() or 'msg_decoded' in globals():
-      print "New message from backend %r to %r at %r"%(device_id_str, dst_id, t)
-      print "\033[1;36mNetIDE header: Version = %r, Type of msg = %r, Length = %r Bytes, XID = %r, Module ID = %r, Datapath = %r\033[1;m"% (netide_version, netide_msg_type_v2, netide_msg_len, netide_xid, netide_mod_id, netide_datapath)
-      print '\033[1;36mOpenFlow message header: Version = %r, Type of msg = %r, Length = %r Bytes, XID = %r\033[1;m'% (version, msg_type, msg_len, xid)
-      print '\033[1;36mOpenFlow message: %r \033[1;m'% (msg_decoded)
-      print "\n"
-      #writer.writerow({'timestamp':t, 'origin':device_id_str, 'destination':dst_id, 'msg':msg_hexadecimal, 'length':msg_len})
-      fo.write("[%r] [%r] %r \n"% (t, device_id_str, msg_decoded))
+      #print "New message from backend %r to %r at %r"%(dst_field, src_field, t)
+      #print "\033[1;36mNetIDE header: Version = %r, Type of msg = %r, Length = %r Bytes, XID = %r, Module ID = %r, Datapath = %r\033[1;m"% (netide_version, netide_msg_type_v2, netide_msg_len, netide_xid, netide_mod_id, netide_datapath)
+      #print '\033[1;36mOpenFlow message header: Version = %r, Type of msg = %r, Length = %r Bytes, XID = %r\033[1;m'% (version, msg_type, msg_len, xid)
+      #print '\033[1;36mOpenFlow message: %r \033[1;m'% (msg_decoded)
+      #print "\n"
+      #writer.writerow({'timestamp':t, 'origin':dst_field, 'destination':src_field, 'msg':msg_hexadecimal, 'length':msg_len})
+      #fo.write("[%r] [%r] %r \n"% (t, dst_field, msg_decoded))
 
 
 fo.close()
