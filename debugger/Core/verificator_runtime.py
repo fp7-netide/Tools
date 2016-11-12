@@ -151,7 +151,7 @@ def print_list_address(address_list):
 def IDE_connection(message):
    context = zmq.Context()
    publisher = context.socket(zmq.PUB)
-   publisher.bind("tcp://127.0.0.1:5560")
+   publisher.bind("tcp://*:5560")
    netip_message = NetIDEOps.netIDE_encode('NETIDE_MGMT', 0, 0, 0, message)
    time.sleep(1)
    publisher.send(netip_message);
