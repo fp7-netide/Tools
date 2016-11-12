@@ -91,8 +91,9 @@ def module_identification(module_list, src_field, length):
 
 def print_module_list (module_list):
    for i in module_list:
-      print('\033[1;34m%r has sent to %r %r messages. Average length of messages %r Bytes, maximum message size %r Bytes, minimum message size %r Bytes.\033[1;m')% (i.origin.replace("'", ""), i.destination.replace("'", ""), i.counter, i.length/i.counter , i.max_length, i.min_length)
-
+      msg = '\033[1;34m%r has sent to %r %r messages. Average length of messages %r Bytes, maximum message size %r Bytes, minimum message size %r Bytes.\033[1;m'% (i.origin.replace("'", ""), i.destination.replace("'", ""), i.counter, i.length/i.counter , i.max_length, i.min_length)
+      print(msg)
+      IDE_connection(msg)
 
 def msg_parser (msg):
    (netide_version, netide_msg_type, netide_msg_len, netide_xid, netide_mod_id, netide_datapath) = NetIDEOps.netIDE_decode_header(msg)
