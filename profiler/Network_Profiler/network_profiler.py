@@ -59,14 +59,14 @@ def port_stats_reply_handler(msg, netide_datapath):
    stat_message = []
    #For each port
    for stat in body:
-      ports.append('port_no=%d '
+      ports.append('dpid=%d port_no=%d '
 	               'rx_packets=%d tx_packets=%d '
 	               'rx_bytes=%d tx_bytes=%d '
 	               'rx_dropped=%d tx_dropped=%d '
 	               'rx_errors=%d tx_errors=%d '
 	               'rx_frame_err=%d rx_over_err=%d rx_crc_err=%d '
 	               'collisions=%d ' %
-	               (stat.port_no,
+	               (netide_datapath, stat.port_no,
 	                stat.rx_packets, stat.tx_packets,
 	                stat.rx_bytes, stat.tx_bytes,
 	                stat.rx_dropped, stat.tx_dropped,
@@ -306,20 +306,21 @@ def receive_messages():
    socket.setsockopt(zmq.SUBSCRIBE, "")
 
    while True:
-      destination, origin, msg = socket.recv_multipart()
-      (stats_type_code, msg_decoded, netide_datapath) = msg_parser(msg)
-      #print(stats_type_code)
-      #print(msg_decoded)
-      if stats_type_code == 1:
-      	port_stats_reply_handler(msg_decoded, netide_datapath)
-      if stats_type_code == 2:
-      	flow_stats_reply_handler(msg_decoded, netide_datapath)
-      if stats_type_code == 3:
-      	aggregate_stats_reply_handler(msg_decoded, netide_datapath)
-      if stats_type_code == 4:
-      	queue_stats_reply_handler(msg_decoded)
-      if stats_type_code == 5:
-      	table_stats_reply_handler(msg_decoded)
+      dst_field, src_field, msg = socket.recv_multipart()
+      if src_field.startswith("1_", 0, 2) == True:
+        (stats_type_code, msg_decoded, netide_datapath) = msg_parser(msg)
+        #print(stats_type_code)
+        #print(msg_decoded)
+        if stats_type_code == 1:
+        	port_stats_reply_handler(msg_decoded, netide_datapath)
+        if stats_type_code == 2:
+        	flow_stats_reply_handler(msg_decoded, netide_datapath)
+        if stats_type_code == 3:
+        	aggregate_stats_reply_handler(msg_decoded, netide_datapath)
+        if stats_type_code == 4:
+        	queue_stats_reply_handler(msg_decoded)
+        if stats_type_code == 5:
+        	table_stats_reply_handler(msg_decoded)
 
 
 
@@ -336,13 +337,13 @@ while (n != 0):
     print("------ NETWORK PROFILER V.1.0 ------")
     print("1 -> Send message")
     print("2 -> Create port statistics message")
-    print("3 -> Decode netide message")
-    print("4 -> create packet_in message")
-    print("5 -> Create flow statistics message")
-    print("6 -> Create flow aggregate statistics message")
-    print("7 -> Create table statistics message")
-    print("8 -> Create queue statistics message")
-    print("9 -> Print datapaths")
+    print("3 -> Create flow statistics message")
+    print("4 -> Create flow aggregate statistics message")
+    print("5 -> Create table statistics message")
+    print("6 -> Create queue statistics message")
+    #print("7 -> create packet_in message")
+    #print("8 -> Decode netide message")
+    #print("9 -> Print datapaths")
     print("0 -> Exit")    
     
     n=input("Choose an option: ")
@@ -359,33 +360,33 @@ while (n != 0):
     		#zmq_close(publisher)      
     elif (n == 2):
        message_netip = port_stats()
-       for msgs in message_netip:
-       	print (msgs)       
+       #for msgs in message_netip:
+       	#print (msgs)       
 
-    elif (n == 3):
+    elif (n == 8):
        decode_sent_message(message_netip)
        #openflow_message = decode_sent_message(message_netip)
        #print(openflow_message)
 
-    elif (n == 4):
+    elif (n == 7):
        message_netip = packet_in_msg()
-       print (message_netip)
+       #print (message_netip)
+
+    elif (n == 3):
+       message_netip = flow_stats()
+       #print (message_netip)
+
+    elif (n == 4):
+       message_netip = aggregate_stats()
+       #print (message_netip)
 
     elif (n == 5):
-       message_netip = flow_stats()
-       print (message_netip)
+       message_netip = table_stats()
+       #print (message_netip)
 
     elif (n == 6):
-       message_netip = aggregate_stats()
-       print (message_netip)
-
-    elif (n == 7):
-       message_netip = table_stats()
-       print (message_netip)
-
-    elif (n == 8):
        message_netip = queue_stats()
-       print (message_netip)
+       #print (message_netip)
 
     elif (n == 9):
        print_datapath_array()
