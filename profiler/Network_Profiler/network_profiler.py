@@ -28,6 +28,8 @@ sys.path.insert(0,'../../../Engine/libraries/netip/python/')
 from netip import *
 
 ide_socket = None
+message_netip = []
+datapaths = []
 
 n = -1
 
@@ -328,8 +330,6 @@ def receive_messages():
 
 
 
-message_netip = []
-datapaths = []
 #openflow_message = ""
 #log = logging.getLogger()
 #log.addHandler(logging.StreamHandler(sys.stderr))
@@ -339,6 +339,7 @@ ide_socket = ctx.socket(zmq.PUB)
 ide_socket.bind("tcp://*:5561")
 
 def dispatch(n):
+   global message_netip
    if (n == 1):
       #send_msg(message_netip)
       for msgs in message_netip:
@@ -391,6 +392,7 @@ def receive_commands():
    while True:
       message = socket.recv()
       dispatch(message)
+      socket.send("0")
 
 thread.start_new_thread(receive_messages, ())
 thread.start_new_thread(receive_commands, ())
