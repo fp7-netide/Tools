@@ -391,7 +391,7 @@ def receive_commands():
    
    while True:
       message = socket.recv()
-      dispatch(message)
+      dispatch(int(message))
       socket.send("0")
 
 thread.start_new_thread(receive_messages, ())
