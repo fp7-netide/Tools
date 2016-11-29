@@ -203,24 +203,24 @@ def detect_loop(address_list):
 
 
 def menu(module_list, address_list, loop):
-   n = 23
-   while (n != 0):
+   n = "23"
+   while (n != "0"):
       print("------ VERIFICATOR V.2.0 ------")
       print("1 -> Display information about NetIDE Engine.")
       print("2 -> Show if there is a loop in the topology.")
       print("0 -> Exit")
-    
-      n=input("Choose an option: ")
+       
+      n=raw_input("Choose an option: ")
 
-      if (n == 1):
+      if (n == "1"):
          print_module_list (module_list)
          #module_list = []
          print('\n')
            
-      elif (n == 2):
+      elif (n == "2"):
          detect_loop(address_list)
 
-      elif (n == 3):
+      elif (n == "3"):
          #receive_messages(module_list, address_list)
          print_list_address(address_list)
 
