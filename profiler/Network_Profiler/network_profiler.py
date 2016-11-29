@@ -31,7 +31,7 @@ ide_socket = None
 message_netip = []
 datapaths = []
 
-n = -1
+n = "-1"
 
 def start():
    context = zmq.Context()
@@ -340,7 +340,7 @@ ide_socket.bind("tcp://*:5561")
 
 def dispatch(n):
    global message_netip
-   if (n == 1):
+   if (n == "1"):
       #send_msg(message_netip)
       for msgs in message_netip:
          context = zmq.Context()
@@ -349,37 +349,37 @@ def dispatch(n):
          publisher.send("1_shim", len("1_shim"), zmq.SNDMORE)
          publisher.send(msgs, len(msgs), 0)
          #zmq_close(publisher)      
-   elif (n == 2):
+   elif (n == "2"):
       message_netip = port_stats()
       #for msgs in message_netip:
          #print (msgs)
 
-   elif (n == 8):
+   elif (n == "8"):
       decode_sent_message(message_netip)
       #openflow_message = decode_sent_message(message_netip)
       #print(openflow_message)
 
-   elif (n == 7):
+   elif (n == "7"):
       message_netip = packet_in_msg()
       #print (message_netip)
 
-   elif (n == 3):
+   elif (n == "3"):
       message_netip = flow_stats()
       #print (message_netip)
 
-   elif (n == 4):
+   elif (n == "4"):
       message_netip = aggregate_stats()
       #print (message_netip)
 
-   elif (n == 5):
+   elif (n == "5"):
       message_netip = table_stats()
       #print (message_netip)
 
-   elif (n == 6):
+   elif (n == "6"):
       message_netip = queue_stats()
       #print (message_netip)
 
-   elif (n == 9):
+   elif (n == "9"):
       print_datapath_array()
 
 
@@ -391,13 +391,13 @@ def receive_commands():
    
    while True:
       message = socket.recv()
-      dispatch(int(message))
+      dispatch((message))
       socket.send("0")
 
 thread.start_new_thread(receive_messages, ())
 thread.start_new_thread(receive_commands, ())
 
-while (n != 0):
+while (n != "0"):
     #time.sleep(0.7)
     print("------ NETWORK PROFILER V.1.0 ------")
     print("1 -> Send message")
@@ -411,7 +411,7 @@ while (n != 0):
     #print("9 -> Print datapaths")
     print("0 -> Exit")    
     
-    n=input("Choose an option: ")
+    n=raw_input("Choose an option: ")
 
     dispatch(n)
 
