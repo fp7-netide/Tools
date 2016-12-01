@@ -282,21 +282,22 @@ def receive_messages():
    global received_counter
 
    while True:
-      destination, origin, msg = socket.recv_multipart()
-      (stats_type_code, msg_decoded) = msg_parser(msg)
-      #print(stats_type_code)
-      #print(msg_decoded)
-      if stats_type_code == 1:
-      	port_stats_reply_handler(msg_decoded)
-      if stats_type_code == 2:
-      	flow_stats_reply_handler(msg_decoded)
-      if stats_type_code == 3:
-        received_counter = received_counter + 1
-      	#aggregate_stats_reply_handler(msg_decoded)
-      if stats_type_code == 4:
-      	queue_stats_reply_handler(msg_decoded)
-      if stats_type_code == 5:
-      	table_stats_reply_handler(msg_decoded)
+      dst_field, src_field, msg = socket.recv_multipart()
+         if src_field.startswith("1_", 0, 2) == True:
+         (stats_type_code, msg_decoded) = msg_parser(msg)
+         #print(stats_type_code)
+         #print(msg_decoded)
+         if stats_type_code == 1:
+      	   port_stats_reply_handler(msg_decoded)
+         if stats_type_code == 2:
+      	   flow_stats_reply_handler(msg_decoded)
+         if stats_type_code == 3:
+           received_counter = received_counter + 1
+      	   #aggregate_stats_reply_handler(msg_decoded)
+         if stats_type_code == 4:
+      	   queue_stats_reply_handler(msg_decoded)
+         if stats_type_code == 5:
+      	   table_stats_reply_handler(msg_decoded)
 
 
 
@@ -311,7 +312,7 @@ datapaths = []
 thread.start_new_thread(receive_messages, ())
 key=input("Choose an option: ")
 if (key == 1):
-  while (n < 175):
+  while (n < 500):
       message_netip = aggregate_stats()
       for msgs in message_netip:
          context = zmq.Context()
@@ -321,7 +322,7 @@ if (key == 1):
          publisher.send(msgs, len(msgs), 0)
       sent_counter = sent_counter + 1
       n =  n + 1
-      time.sleep(0.006)
+      time.sleep(0.002)
   print("Sent messages:")
   print(sent_counter)
   print('\n')
