@@ -119,11 +119,11 @@ def aggregate_stats_reply_handler(msg, netide_datapath):
     stat_message = {"AggregatedStats": []}
     json_stats = {"Type":"Aggregate Stats", "dpid": netide_datapath, "packet_count": body[0].packet_count, "byte_count": body[0].byte_count, "flow_count": body[0].flow_count}
     stats = json.dumps(json_stats)
-    stat_message["AggregatedStats"].append(json_stats)
+    stat_message["AggregatedStats"] = json_stats
 
     print'\033[1;34m AggregateStats: packet_count=%d, byte_count=%d, flow_count=%d\033[1;m'%(body[0].packet_count, body[0].byte_count, body[0].flow_count)
     print('\n')
-    IDE_connection(json.dumps(stats))
+    IDE_connection(json.dumps(stat_message))
 
 
 
