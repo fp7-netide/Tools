@@ -127,9 +127,10 @@ def aggregate_stats_reply_handler(msg, netide_datapath):
 
 
 
-def table_stats_reply_handler(msg):
+def table_stats_reply_handler(msg, netide_datapath):
     body = msg.body
     tables = []
+    stat_message = {"TableStats": []}
     for stat in body:
         tables.append('table_id=%d name=%s wildcards=0x%02x '
                       'max_entries=%d active_count=%d '
@@ -137,21 +138,30 @@ def table_stats_reply_handler(msg):
                       (stat.table_id, stat.name, stat.wildcards,
                        stat.max_entries, stat.active_count,
                        stat.lookup_count, stat.matched_count))
+        json_stats = {"Type":"Table Stats", "dpid": netide_datapath, "table_id": stat.table_id, "name": stat.name, "wildcards": stat.wildcards, "max_entries": stat.max_entries, "active_count": stat.active_count, "lookup_count": stat.lookup_count, "matched_count": stat.matched_count}
+        stats = json.dumps(json_stats)
+        stat_message["TableStats"].append(json_stats)
     print'\033[1;37m TableStats: %s \033[1;m'%(tables)
     print('\n')
+    IDE_connection(json.dumps(stat_message))
 
 
 
-def queue_stats_reply_handler(msg):
+def queue_stats_reply_handler(msg, netide_datapath):
     body = msg.body
     queues = []
+    stat_message = {"QueueStats": []}
     for stat in body:
         queues.append('port_no=%d queue_id=%d '
                       'tx_bytes=%d tx_packets=%d tx_errors=%d ' %
                      (stat.port_no, stat.queue_id,
                       stat.tx_bytes, stat.tx_packets, stat.tx_errors))
+        json_stats = {"Type":"Queue Stats", "dpid": netide_datapath, "port_no": stat.port_no, "queue_id": stat.queue_id, "tx_bytes": stat.tx_bytes, "tx_packets": stat.tx_packets, "tx_errors": stat.tx_error}
+        stats = json.dumps(json_stats)
+        stat_message["QueueStats"].append(json_stats)
     print'\033[1;35m QueueStats: %s \033[1;m'%(queues)
     print('\n')
+    IDE_connection(json.dumps(stat_message))
     #print(len(body))
 
 
@@ -323,9 +333,9 @@ def receive_messages():
         if stats_type_code == 3:
         	aggregate_stats_reply_handler(msg_decoded, netide_datapath)
         if stats_type_code == 4:
-        	queue_stats_reply_handler(msg_decoded)
+        	queue_stats_reply_handler(msg_decoded, netide_datapath)
         if stats_type_code == 5:
-        	table_stats_reply_handler(msg_decoded)
+        	table_stats_reply_handler(msg_decoded, netide_datapath)
 
 
 
