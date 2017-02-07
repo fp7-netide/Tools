@@ -1,5 +1,5 @@
 # SDN Memory Management System for ONOS
-The Memory Management System (MMS) aims at optimizing the utilization of the Ternary Content Addressable Memory (TCAM) of the SDN-enabled switches by providing two different functionalities: (i) the memory deallocation and (ii) the memory swapping. 
+The Memory Management System (MMS) aims at optimizing the utilization of the Ternary Content Addressable Memory (TCAM) of the SDN-enabled switches by providing two different functionalities: (i) the *memory deallocation* and (ii) the *memory swapping*. 
 The memory deallocation automatically deletes the flow entries installed in the TCAM by SDN applications that are no longer running/active. The memory swapping mitigates network performance degradations caused by the network devices operating in full memory condition, by temporarily moving the least frequently matched flow entries to a slower (but larger) memory. This SDN component is currently developed for the ONOS controller and is available for testing under the Apache 2.0 licence.
 
 ## Installation
