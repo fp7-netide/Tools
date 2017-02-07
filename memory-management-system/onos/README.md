@@ -1,16 +1,6 @@
 # SDN Memory Management System for ONOS
-The Memory Management System is a Network Application (NetApp) that works on top of ONOS. It overcomes two important issues that may arise in SDN networks: the limited memory of network devices and the unwanted rules left by other NetApps inside the network.
-
-The functionalities that the MMS proposes to overcome these limitations are: 
-
-* Memory Deallocation
-* Memory Swapping
-
-## Memory Deallocation
-This functionality removes the flow rules erroneously left by deactivated/uninstalled NetApps for Network Operating Systems. The Memory Deallocation can be activated only for specific NetApp that the network administrator wants to control.
-
-## Memory Swapping
-The Memory Swapping is an algorithm that overcomes the limited memory size of SDN network devices by creating a virtual flow rule memory between the Network Operating System and the device flow table. The algorithm is automatically activated when an OpenFlow TABLE_FULL is intercepted by the MMS. By default it swaps out the 20% of the less used rules inside the TCAM.
+The Memory Management System (MMS) aims at optimizing the utilization of the Ternary Content Addressable Memory (TCAM) of the SDN-enabled switches by providing two different functionalities: (i) the memory deallocation and (ii) the memory swapping. 
+The memory deallocation automatically deletes the flow entries installed in the TCAM by SDN applications that are no longer running/active. The memory swapping mitigates network performance degradations caused by the network devices operating in full memory condition, by temporarily moving the least frequently matched flow entries to a slower (but larger) memory. This SDN component is currently developed for the ONOS controller and is available for testing under the Apache 2.0 licence.
 
 ## Installation
 The MMS is implemented as a NetApp for the [ONOS controller](http://onosproject.org/) by using the libraries included in its [source code](https://wiki.onosproject.org/display/ONOS/Downloads). The MMS NetApp is tested for ONOS 1.5.1.
