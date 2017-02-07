@@ -3,7 +3,7 @@ The Memory Management System (MMS) aims at optimizing the utilization of the Ter
 The memory deallocation automatically deletes the flow entries installed in the TCAM by SDN applications that are no longer running/active. The memory swapping mitigates network performance degradations caused by the network devices operating in full memory condition, by temporarily moving the least frequently matched flow entries to a slower (but larger) memory. This SDN component is currently developed for the ONOS controller and is available for testing under the Apache 2.0 licence.
 
 ## Installation
-The MMS is implemented as a NetApp for the [ONOS controller](http://onosproject.org/) by using the libraries included in its [source code](https://wiki.onosproject.org/display/ONOS/Downloads). The MMS NetApp is tested for ONOS 1.5.1.
+The MMS is implemented as a Network Application (NetApp) for the [ONOS controller](http://onosproject.org/) version 1.5.1 Falcon.
 
 ### STEP 1: Download ONOS
 ```
@@ -86,7 +86,7 @@ STEP 5: Update the stateless firewall to a dynamic statefull one.
 $ ./demo_gc_netide.sh
 ```
 
-As you can see on the GUI, the old flows remains installed on the switch. This may create traffic and security issues for the traffic inside the network.
+As you can see on the GUI, the old flows remain installed on the switch. This may create traffic and security issues in the network.
 
 STEP 6: Show the MMS functionalities
 
@@ -107,7 +107,7 @@ Add the stateless firewall application to the MMS deallocation function:
 onos> addtomms eu.netide.statelessfirewall
 ```
 
-Now repeat the test from STEP 3 to 5 with the MMS active. When you deactivate the stateless firewall, the Flow Table is clean up from the old flow rules.
+Now repeat the test from STEP 3 to 5 with the MMS active. When you deactivate the stateless firewall, the flow table has been clean up from the old flow rules.
 
 ## Memory Swapping Test
 
