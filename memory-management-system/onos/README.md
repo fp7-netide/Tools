@@ -22,7 +22,7 @@ In this way you can easily deploy ONOS on a VM or a remote machine. Rember to is
 
 ### STEP 4: Download and Install MMS app
 
-The MMS is a standalone NetApp. It can be easily compiled with Maven and installed inside ONOS.
+The MMS is implemented as a standalone NetApp. It can be easily compiled with Maven and installed inside ONOS at runtime.
 
 Download the code:
 ```
