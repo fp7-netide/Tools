@@ -3,7 +3,7 @@ The Memory Management System (MMS) aims at optimizing the utilization of the Ter
 The memory deallocation automatically deletes the flow entries installed in the TCAM by SDN applications that are no longer running/active. The memory swapping mitigates network performance degradations caused by the network devices operating in full memory condition, by temporarily moving the least frequently matched flow entries to a slower (but larger) memory. This SDN component is currently developed for the ONOS controller and is available for testing under the Apache 2.0 licence.
 
 ## Installation
-The MMS is implemented as a Network Application (NetApp) for the [ONOS controller](http://onosproject.org/) version 1.5.1 Falcon.
+The MMS is implemented as a Network Application for the [ONOS controller](http://onosproject.org/) version 1.5.1 Falcon.
 
 ### STEP 1: Download ONOS
 ```
@@ -20,7 +20,7 @@ Please refer to the official guide [click here](https://wiki.onosproject.org/dis
 
 In this way you can easily deploy ONOS on a VM or a remote machine. Rember to issue the command ```cell *your cell name*``` after you create the cell. Then continue with this guide.
 
-### STEP 4: Download and Install MMS app
+### STEP 4: Download and Install the MMS
 
 Download the code:
 ```
@@ -135,7 +135,7 @@ Copy the file GCTestTopology.py to your Mininet VM and execute it:
 $ ./GCTestTopology.py *ONOS IP*
 ```
 
-STEP 3: Configure the forwarding NetApp for ONOS
+STEP 3: Configure the ReactiveForwarding application in ONOS
 
 ```
 onos> cfg set org.onosproject.fwd.ReactiveForwarding matchIpv4Address true
@@ -156,7 +156,7 @@ STEP 5: In order to perform a test, copy the hping_test.sh file in your Mininet 
 # sh hping_test.sh
 ```
 
-Now the pings start flowing and the forwarding NetApp installs the associated rules in the virtual switch. When the number of rules reaches 1500 in the flow table, the MMS swapping cleans up all the less used rules.
+Now the pings start flowing and the ReactiveForwarding installs the associated rules in the virtual switch. When the number of rules reaches 1500 in the flow table, the MMS swapping cleans up all the less used rules.
 
 In order to see how the MMS impacts on the number of flow rules installed, the ONOS GUI offers a representation of this data.
 
