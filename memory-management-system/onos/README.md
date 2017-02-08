@@ -12,7 +12,7 @@ $ git checkout 1.5.1
 ```
 ### STEP 2: ONOS Prerequisites
 
-Follow the ONOS WiKi (https://wiki.onosproject.org/display/ONOS/Installing+and+Running+ONOS) in order to setup your environment to compile and run ONOS
+Follow the ONOS WiKi (https://wiki.onosproject.org/display/ONOS/ONOS+from+Scratch) in order to setup the environment and to compile and run ONOS
 
 ### STEP 3: Create a custom ONOS cell
 
@@ -21,8 +21,6 @@ Please refer to the official guide [click here](https://wiki.onosproject.org/dis
 In this way you can easily deploy ONOS on a VM or a remote machine. Rember to issue the command ```cell *your cell name*``` after you create the cell. Then continue with this guide.
 
 ### STEP 4: Download and Install MMS app
-
-The MMS is implemented as a standalone NetApp. It can be easily compiled with Maven and installed inside ONOS at runtime.
 
 Download the code:
 ```
@@ -40,7 +38,7 @@ $ cd mms && mvn clean install
 $ onos-app $OC1 install target/onos-app-mms-1.0.0-SNAPSHOT.oar
 ```
 
-Now the MMS is installed. To activate it, please use the following command:
+Now the MMS is installed. To activate it, please run the following command in the ONOS CLI:
 
 ```
 onos> app activate eu.netide.mms
