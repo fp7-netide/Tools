@@ -8,7 +8,7 @@ The MMS is implemented as a Network Application (NetApp) for the [ONOS controlle
 ### STEP 1: Download ONOS
 ```
 $ git clone https://gerrit.onosproject.org/onos
-$ git checkout v1.5.1
+$ git checkout 1.5.1
 ```
 ### STEP 2: ONOS Prerequisites
 
