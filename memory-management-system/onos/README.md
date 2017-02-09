@@ -10,7 +10,7 @@ The MMS is implemented as a bundle for the [ONOS controller](http://onosproject.
 Download and install Apache Karaf 3.0.5:
 
 ```
-$  ~
+$ cd ~
 $ wget https://archive.apache.org/dist/karaf/3.0.5/apache-karaf-3.0.5.tar.gz
 $ tar xfz apache-karaf-3.0.5.tar.gz
 ```
