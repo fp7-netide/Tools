@@ -63,12 +63,14 @@ $ onos-karaf
 
 Download the code:
 ```
+$ cd ~
 $ git clone https://github.com/fp7-netide/Tools.git
 ```
 
 Enter the project directory and compile the code:
 ```
-$ cd mms && mvn clean install
+$ cd Tools/memory-management-system/onos/mms
+$ mvn clean install
 ```
 
 ### STEP 5: Install the network application inside ONOS
