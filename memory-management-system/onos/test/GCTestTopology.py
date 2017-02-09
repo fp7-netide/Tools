@@ -31,8 +31,8 @@ class MyTopology(Topo):
         host2 = self.addHost('host2', ip='192.168.0.2/24')
                     
 
-        self.addLink(host1, edgeRouter, port2=1, bw=100)
-        self.addLink(edgeRouter, host2, port1=2, bw=100)
+        self.addLink(host1, edgeRouter, port2=1)
+        self.addLink(edgeRouter, host2, port1=2)
       
 
         
