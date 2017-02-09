@@ -187,7 +187,7 @@ onos> cfg set org.onosproject.fwd.ReactiveForwarding matchIpv4Address true
 
 onos> cfg set org.onosproject.fwd.ReactiveForwarding matchTcpUdpPorts true
 
-onos> cfg set org.onosproject.fwd.ReactiveForwarding flowTimeout 180
+onos> cfg set org.onosproject.fwd.ReactiveForwarding flowTimeout 0
 ```
 
 STEP 4: Go to the Mininet shell and do a pingall to verify that everything is working properly
