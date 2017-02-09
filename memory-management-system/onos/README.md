@@ -187,7 +187,7 @@ onos> cfg set org.onosproject.fwd.ReactiveForwarding matchIpv4Address true
 
 onos> cfg set org.onosproject.fwd.ReactiveForwarding matchTcpUdpPorts true
 
-onos> cfg set org.onosproject.fwd.ReactiveForwarding flowTimeout 0
+onos> cfg set org.onosproject.fwd.ReactiveForwarding flowTimeout 180
 ```
 
 STEP 4: Go to the Mininet shell and do a pingall to verify that everything is working properly
@@ -205,7 +205,7 @@ then go where you copied the script and execute:
 # sh hping_test.sh
 ```
 
-Now the pings start flowing and the ReactiveForwarding installs the many rules with infinite timeout in the virtual switch. When the number of rules reaches 1800 in the flow table, the MMS swapping moves the less used flow rules from the memory of the switch to an external database maintained by the MMS itself.
+Now the pings start flowing and the ReactiveForwarding installs the many rules with infinite timeout in the virtual switch. When the number of rules reaches 1800 in the flow table, the MMS swapping moves the less used flow rules from the memory of the switch to an external database maintained by the MMS itself. In this way, the rules necessary to forward the incoming packets can be installed in the flow table of the switch.
 
 In order to see how the MMS impacts on the number of flow rules installed, the ONOS GUI offers a representation of this data.
 
