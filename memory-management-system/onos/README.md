@@ -102,7 +102,7 @@ $ cd ~/Tools/memory-management-system/onos/test
 Copy the file GCTestTopology.py to your Mininet VM and execute it:
 
 ```
-$ ./GCTestTopology.py ONOS_IP
+$ sudo ./GCTestTopology.py ONOS_IP
 ```
 where ```ONOS_IP=127.0.0.1``` if Mininet and ONOS are running on the same machine.
 
