@@ -96,33 +96,36 @@ STEP 2: Set up your test environment
 Enter the *test* folder:
 
 ```
-$ cd test
+$ cd ~/Tools/memory-management-system/onos/test
 ```
 
 Copy the file GCTestTopology.py to your Mininet VM and execute it:
 
 ```
-$ ./GCTestTopology.py *ONOS IP*
+$ ./GCTestTopology.py ONOS_IP
 ```
+where ```ONOS_IP=127.0.0.1``` if Mininet and ONOS are running on the same machine.
 
 STEP 3: Install the simple stateless firewall application on ONOS
 
 Go back to the build machine and issue this command:
 
 ```
-$ ./demo_gc_startup.sh
+cd ~/Tools/memory-management-system/onos/test
+$ ./demo_mms_startup.sh
 ```
 
 It compiles the application and installs it on ONOS.
 
 STEP 4: Open ONOS GUI
 
-Open a browser and go to the ONOS GUI at the address http://*onos ip*:8181/ui/index.html. Open the device flow table. You should see several flows installed by the stateless firewall without timeouts. Leave it open in order to see what happens during the next steps.
+Open a browser and go to the ONOS GUI at the address http://localhost:8181/onos/ui/login.html (where ```localhost``` must be replaced with the actual IP address of the machine where ONOS is installed and running). Open the device flow table. You should see several flows installed by the stateless firewall without timeouts. Leave it open in order to see what happens during the next steps.
 
 STEP 5: Update the stateless firewall to a dynamic statefull one.
 
 ```
-$ ./demo_gc_netide.sh
+cd ~/Tools/memory-management-system/onos/test
+$ ./demo_mms_netide.sh
 ```
 
 As you can see on the GUI, the old flows remain installed on the switch. This may create traffic and security issues in the network.
