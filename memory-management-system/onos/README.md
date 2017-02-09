@@ -170,14 +170,15 @@ STEP 2: Set up your test environment
 Enter the *test* folder:
 
 ```
-$ cd test
+$ $ cd ~/Tools/memory-management-system/onos/test
 ```
 
 Copy the file GCTestTopology.py to your Mininet VM and execute it:
 
 ```
-$ ./GCTestTopology.py *ONOS IP*
+$ sudo ./GCTestTopology.py ONOS_IP
 ```
+where ```ONOS_IP=127.0.0.1``` if Mininet and ONOS are running on the same machine.
 
 STEP 3: Configure the ReactiveForwarding application in ONOS
 
@@ -189,18 +190,22 @@ onos> cfg set org.onosproject.fwd.ReactiveForwarding matchTcpUdpPorts true
 onos> cfg set org.onosproject.fwd.ReactiveForwarding flowTimeout 180
 ```
 
-STEP 4: Go to the Mininet shell and do a pingall and open a Xterm shell on admin
+STEP 4: Go to the Mininet shell and do a pingall to verify that everything is working properly
 ```
 mininet> pingall
-mininet> xterm host1
 ```
 
-STEP 5: In order to perform a test, copy the hping_test.sh file in your Mininet VM and open the xterm shell that you created before and issue this command:
+STEP 5: In order to perform a test, copy the hping_test.sh file in your Mininet VM and open the xterm with command:
+```
+mininet> xterm host1
+```
+then go where you copied the script and execute:
+
 ```
 # sh hping_test.sh
 ```
 
-Now the pings start flowing and the ReactiveForwarding installs the associated rules in the virtual switch. When the number of rules reaches 1500 in the flow table, the MMS swapping cleans up all the less used rules.
+Now the pings start flowing and the ReactiveForwarding installs the many rules with infinite timeout in the virtual switch. When the number of rules reaches 1800 in the flow table, the MMS swapping moves the less used flow rules from the memory of the switch to an external database maintained by the MMS itself.
 
 In order to see how the MMS impacts on the number of flow rules installed, the ONOS GUI offers a representation of this data.
 
