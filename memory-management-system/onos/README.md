@@ -12,13 +12,29 @@ $ git checkout 1.5.1
 ```
 ### STEP 2: ONOS Prerequisites
 
-Follow the ONOS WiKi (https://wiki.onosproject.org/display/ONOS/ONOS+from+Scratch) in order to setup the environment and to compile and run ONOS
+Follow the ONOS WiKi (https://wiki.onosproject.org/display/ONOS/ONOS+from+Scratch) in order to setup the environment. Compile ONOS by executing the following command from the ONOS folder:
+
+```
+$ mvn clean install
+```
 
 ### STEP 3: Create a custom ONOS cell
 
 Please refer to the official guide [click here](https://wiki.onosproject.org/display/ONOS/ONOS+from+Scratch#ONOSfromScratch-4.Createacustomcelldefinition) to create a custom ONOS cell.
 
-In this way you can easily deploy ONOS on a VM or a remote machine. Rember to issue the command ```cell *your cell name*``` after you create the cell. Then continue with this guide.
+For instance, to run ONOS on the local machine, go to  ```$ONOS_ROOT/tools/test/cells``` and create a cell file with the following content:
+
+```
+export ONOS_NIC=127.0.0.*
+export OC1="127.0.0.1"
+export ONOS_APPS="drivers,openflow,fwd,proxyarp,mobility"
+```
+
+Remember to issue the command ```cell *your cell name*``` after you create the cell and then start ONOS with command:
+
+```
+$ onos-karaf
+```
 
 ### STEP 4: Download and Install the MMS
 
