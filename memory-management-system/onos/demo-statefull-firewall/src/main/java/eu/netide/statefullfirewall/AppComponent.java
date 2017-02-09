@@ -127,7 +127,7 @@ public class AppComponent {
     	cfgService.registerProperties(getClass());
         appId = coreService.registerApplication("eu.netide.statefullfirewall");
         packetService.addProcessor(processor, PacketProcessor.ADVISOR_MAX + 1);
-        installFirewallRules();
+        //installFirewallRules();
         requestPackests();
     	log.info("Started with Application ID {}", appId.id());
     }
@@ -182,7 +182,6 @@ public class AppComponent {
                 return;
             }
 
-            //TODO: Bisogna fare qui il check delle regole FW
             if (ethPkt.getEtherType() == Ethernet.TYPE_IPV4) {
             	IPv4 ipv4Packet = (IPv4) ethPkt.getPayload();
                 byte ipv4Protocol = ipv4Packet.getProtocol();
@@ -190,7 +189,6 @@ public class AppComponent {
                 Ip4Prefix matchIp4SrcPrefix =
                         Ip4Prefix.valueOf(ipv4Packet.getSourceAddress(),
                                           24);
-                //log.info("Sto controllando match: {}", matchIp4SrcPrefix);
 
 
                 if (matchIp4SrcPrefix.equals(netAddress) && ipv4Protocol == IPv4.PROTOCOL_TCP) {
@@ -201,7 +199,7 @@ public class AppComponent {
                 	int tcpPortSSL = 443;
 
                 	if((tcpPacket.getDestinationPort() != tcpPortWWW) && (tcpPacket.getDestinationPort() != tcpPortSSL)) {
-                		log.info("TCP Bloccato");
+                		log.debug("TCP Blocked");
                 		context.block();
                 		return;
                 	}
@@ -209,7 +207,6 @@ public class AppComponent {
                 else
                 {
                 	//Block all the remaining traffic
-                	//log.info("Blocco restante");
                 	context.block();
                 	return;
                 }
