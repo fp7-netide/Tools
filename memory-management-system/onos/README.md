@@ -3,7 +3,7 @@ The Memory Management System (MMS) aims at optimizing the utilization of the Ter
 The memory deallocation automatically deletes the flow entries installed in the TCAM by SDN applications that are no longer running/active. The memory swapping mitigates network performance degradations caused by the network devices operating in full memory condition, by temporarily moving the least frequently matched flow entries to a slower (but larger) memory. This SDN component is currently developed for the ONOS controller and is available for testing under the Apache 2.0 licence.
 
 ## Installation
-The MMS is implemented as a bundle for the [ONOS controller](http://onosproject.org/) version 1.5.1 Falcon. The following guide has been tested on a Ubuntu 16.04 operating system, Apache Karaf 3.0.5 and Oracle Java Runtime Environment build 1.8.0_121-b13.
+The MMS is implemented as a bundle for the [ONOS controller](http://onosproject.org/) version 1.5.1 Falcon. The following guide has been tested on a Ubuntu 16.04 operating system, Apache Karaf 3.0.5, Mininet 2.2.1 and Oracle Java Runtime Environment build 1.8.0_121-b13.
 
 ### STEP 1: Download ONOS and configure your environment
 
