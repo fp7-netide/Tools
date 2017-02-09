@@ -134,7 +134,7 @@ STEP 6: Show the MMS functionalities
 
 Install the application inside ONOS:
 ```
-$ ./install_gc_onos.sh
+$ ./install_mms_onos.sh
 ```
 
 Now the MMS is running inside ONOS. In order to check the installation correctness, please use this command inside the ONOS shell:
@@ -146,7 +146,7 @@ You should see a star near *eu.netide.mms*
 
 Add the stateless firewall application to the MMS deallocation function:
 ```
-onos> addtomms eu.netide.statelessfirewall
+onos> addapplication eu.netide.statelessfirewall
 ```
 
 Now repeat the test from STEP 3 to 5 with the MMS active. When you deactivate the stateless firewall, the flow table has been clean up from the old flow rules.
