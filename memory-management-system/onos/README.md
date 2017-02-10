@@ -69,13 +69,13 @@ $ git clone https://github.com/fp7-netide/Tools.git
 
 Enter the project directory and compile the code:
 ```
-$ cd Tools/memory-management-system/onos/mms
+$ cd Tools/memory-management-system/onos/
 $ mvn clean install
 ```
-
 ### STEP 5: Install the network application inside ONOS
 
 ```
+$ cd mms
 $ onos-app $OC1 install target/onos-app-mms-1.0.0-SNAPSHOT.oar
 ```
 
