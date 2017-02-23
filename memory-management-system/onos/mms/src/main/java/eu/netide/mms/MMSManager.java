@@ -379,6 +379,7 @@ public class MMSManager implements MMSServices {
                                 flowDeletionFinished.set(false);
                                 swapTask = mmsTaskExecutor.submit(new SwapRules(DeviceId.deviceId(Dpid.uri(dpid))));
                                 //deleteOverflowRules(DeviceId.deviceId(Dpid.uri(dpid)));
+                                mmsScheduledTaskExecutor.schedule(new UnsetBoolTask(), timeout, TimeUnit.SECONDS);
                             }
                         } catch (Exception e) {
                             log.warn("Exception in SwapRule task");
@@ -389,6 +390,17 @@ public class MMSManager implements MMSServices {
                     break;
             }
 
+        }
+    }
+
+    // Task in order to avoid the Swap out blocking, if the switch does not send back the last FlowRule to delete
+    private class UnsetBoolTask implements Runnable {
+
+        @Override
+        public void run() {
+            if (!flowDeletionFinished.get()) {
+                flowDeletionFinished.set(true);
+            }
         }
     }
 
