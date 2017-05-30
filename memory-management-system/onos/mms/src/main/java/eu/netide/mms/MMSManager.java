@@ -17,7 +17,7 @@
  * limitations under the License.
  *
  * Author:
- * Antonio Marsico (antonio.marsico@create-net.org)
+ * Antonio Marsico (amarsico@fbk.eu)
  */
 package eu.netide.mms;
 
@@ -51,12 +51,17 @@ import org.onosproject.cfg.ComponentConfigService;
 import org.onosproject.core.Application;
 import org.onosproject.core.ApplicationId;
 import org.onosproject.core.CoreService;
+import org.onosproject.net.Device;
 import org.onosproject.net.DeviceId;
 import org.onosproject.net.PortNumber;
+import org.onosproject.net.device.DeviceEvent;
+import org.onosproject.net.device.DeviceListener;
+import org.onosproject.net.device.DeviceService;
 import org.onosproject.net.flow.DefaultFlowRule;
 import org.onosproject.net.flow.DefaultTrafficSelector;
 import org.onosproject.net.flow.DefaultTrafficTreatment;
 import org.onosproject.net.flow.FlowEntry;
+import org.onosproject.net.flow.FlowId;
 import org.onosproject.net.flow.FlowRule;
 import org.onosproject.net.flow.FlowRuleEvent;
 import org.onosproject.net.flow.FlowRuleListener;
@@ -131,6 +136,9 @@ public class MMSManager implements MMSServices {
     protected PacketService packetService;
 
     @Reference(cardinality = ReferenceCardinality.MANDATORY_UNARY)
+    protected DeviceService deviceService;
+
+    @Reference(cardinality = ReferenceCardinality.MANDATORY_UNARY)
     protected CoreService coreService;
 
     @Reference(cardinality = ReferenceCardinality.MANDATORY_UNARY)
@@ -153,10 +161,10 @@ public class MMSManager implements MMSServices {
     private final FlowRuleListener flowListener = new InternalFlowListener();
     private ReactivePacketProcessor processor = new ReactivePacketProcessor();
     private final InternalOpenFlowListener oflistener = new InternalOpenFlowListener();
+    private final InternalDeviceListener deviceListener = new InternalDeviceListener();
 
     private EventuallyConsistentMap<DeviceId, Set<MMSStoreEntry>> mmsDBSwapped = null;
     private EventuallyConsistentMap<DeviceId, List<MMSStoreEntry>> mmsDBFlowStatistics = null;
-    private EventuallyConsistentMap<DeviceId, Integer> deviceThresholds = null;
     private AsyncDistributedSet<ApplicationId> appsForMMS = null;
 
     private final Logger log = LoggerFactory.getLogger(getClass());
@@ -166,13 +174,12 @@ public class MMSManager implements MMSServices {
 
     private ScheduledFuture<?> deleteRulesScheduler = null;
     private ScheduledFuture<?> sortInternalStatisticsDB = null;
-    private Future<?> swapTask = null;
 
-    private ScheduledExecutorService mmsScheduledTaskExecutor = Executors.newScheduledThreadPool(5);
-    private ExecutorService mmsTaskExecutor = Executors.newFixedThreadPool(32);
+    private ScheduledExecutorService mmsScheduledTaskExecutor = Executors.newScheduledThreadPool(2);
+    private ExecutorService mmsTaskExecutor = Executors.newFixedThreadPool(2);
 
     private AtomicBoolean flowDeletionFinished = new AtomicBoolean(true);
-    private FlowRule ruleToWait = null;
+    private FlowId ruleToWait = null;
 
     private ApplicationId appId;
 
@@ -181,11 +188,6 @@ public class MMSManager implements MMSServices {
 
         cfgService.registerProperties(getClass());
         appId = coreService.registerApplication("eu.netide.mms");
-        packetService.addProcessor(processor, PacketProcessor.ADVISOR_MAX);
-        requestPackets();
-        appAdminService.addListener(myAppListener);
-        flowRuleService.addListener(flowListener);
-        controller.addEventListener(oflistener);
         readComponentConfiguration(context);
 
         KryoNamespace.Builder serializer = KryoNamespace.newBuilder()
@@ -197,9 +199,6 @@ public class MMSManager implements MMSServices {
                 .eventuallyConsistentMapBuilder();
 
         EventuallyConsistentMapBuilder<DeviceId, List<MMSStoreEntry>> mmsDBStatisticsBuilder = storageService
-                .eventuallyConsistentMapBuilder();
-
-        EventuallyConsistentMapBuilder<DeviceId, Integer> thresholdDatabaseBuilder = storageService
                 .eventuallyConsistentMapBuilder();
 
         DistributedSetBuilder<ApplicationId> appDBBuilder = storageService.setBuilder();
@@ -214,15 +213,27 @@ public class MMSManager implements MMSServices {
                 .withTimestampProvider((k, v) -> new WallClockTimestamp())
                 .build();
 
-        deviceThresholds = thresholdDatabaseBuilder.withName("mms-store-thresholds")
-                .withSerializer(serializer)
-                .withTimestampProvider((k, v) -> new WallClockTimestamp())
-                .build();
-
         appsForMMS = appDBBuilder
                 .withName("mms-app-set")
                 .withSerializer(Serializer.using(KryoNamespaces.API))
                 .build();
+
+        for (Device device : deviceService.getAvailableDevices()) {
+            List<MMSStoreEntry> flowStatistics = Collections.synchronizedList(Lists.newArrayList());
+            for (FlowEntry entry : flowRuleService.getFlowEntries(device.id())) {
+                if (!isONOSDefaultTreatment(entry)) {
+                    flowStatistics.add(new DefaultMMSEntry(entry));
+                }
+            }
+            mmsDBFlowStatistics.put(device.id(), flowStatistics);
+        }
+
+        packetService.addProcessor(processor, PacketProcessor.director(1));
+        requestPackets();
+        appAdminService.addListener(myAppListener);
+        flowRuleService.addListener(flowListener);
+        controller.addEventListener(oflistener);
+        deviceService.addListener(deviceListener);
 
         log.debug("MMS store size: " + mmsDBSwapped.size());
 
@@ -238,10 +249,19 @@ public class MMSManager implements MMSServices {
         flowRuleService.removeListener(flowListener);
         controller.removeEventListener(oflistener);
         packetService.removeProcessor(processor);
+        deviceService.removeListener(deviceListener);
         mmsDBSwapped.destroy();
-        mmsScheduledTaskExecutor.shutdownNow();
+        mmsScheduledTaskExecutor.shutdown();
+        mmsTaskExecutor.shutdown();
         processor = null;
         log.info("Stopped");
+    }
+
+    private boolean isONOSDefaultTreatment(FlowRule flowRule) {
+        TrafficTreatment onosDefaultTreatment = DefaultTrafficTreatment.builder()
+                .setOutput(PortNumber.CONTROLLER)
+                .build();
+        return flowRule.treatment().equals(onosDefaultTreatment);
     }
 
     /**
@@ -375,11 +395,10 @@ public class MMSManager implements MMSServices {
                         log.debug("FlowMod error: {}", code);
                         try {
                             if (flowDeletionFinished.get()) {
-                                //every new iteration must wait for rule deletion
+                                //every new error must wait for the rule deletion
                                 flowDeletionFinished.set(false);
-                                swapTask = mmsTaskExecutor.submit(new SwapRules(DeviceId.deviceId(Dpid.uri(dpid))));
-                                //deleteOverflowRules(DeviceId.deviceId(Dpid.uri(dpid)));
-                                mmsScheduledTaskExecutor.schedule(new UnsetBoolTask(), timeout, TimeUnit.SECONDS);
+                                mmsTaskExecutor.submit(new SwapRules(DeviceId.deviceId(Dpid.uri(dpid))));
+                                //mmsScheduledTaskExecutor.schedule(new UnsetBoolTask(), timeout, TimeUnit.SECONDS);
                             }
                         } catch (Exception e) {
                             log.warn("Exception in SwapRule task");
@@ -393,13 +412,15 @@ public class MMSManager implements MMSServices {
         }
     }
 
-    // Task in order to avoid the Swap out blocking, if the switch does not send back the last FlowRule to delete
+    // Task in order to avoid the Swap out blocking, if the switch does not send back the last FlowRule deleted
     private class UnsetBoolTask implements Runnable {
 
         @Override
         public void run() {
             if (!flowDeletionFinished.get()) {
                 flowDeletionFinished.set(true);
+                ruleToWait = null;
+                log.info("Unset Swap out block");
             }
         }
     }
@@ -561,7 +582,7 @@ public class MMSManager implements MMSServices {
         @Override
         public void run() {
 
-            Future<?> dependecyCalculatorStatus = mmsTaskExecutor.submit(new DeviceDependencyCalculator(deviceId));
+            //Future<?> dependecyCalculatorStatus = mmsTaskExecutor.submit(new DeviceDependencyCalculator(deviceId));
 
             List<MMSStoreEntry> listToCheck = mmsDBFlowStatistics.get(deviceId);
 
@@ -576,8 +597,7 @@ public class MMSManager implements MMSServices {
             List<MMSStoreEntry> entriesWithDependencies = Lists.newArrayList();
             try {
                 //The dependency task is finished
-                if (dependecyCalculatorStatus.get() == null) {
-
+                //if (dependecyCalculatorStatus.get() == null) {
                     synchronized (listToCheck) {
                         Collections.sort(listToCheck);
                         for (int i = 0; i < threshold; i++) {
@@ -603,7 +623,6 @@ public class MMSManager implements MMSServices {
                         }
                     }
 
-                    //Potential issue -> if there are only flows with timeout? How we manage it?
                     for (int i = 0; i < entriesWithDependencies.size(); i++) {
                         MMSStoreEntry entry = entriesWithDependencies.get(i);
                         //Swap only if permanent, otherwise delete only
@@ -625,14 +644,14 @@ public class MMSManager implements MMSServices {
                         rulesToDelete.add(new DefaultFlowRule(entry));
                     }
 
-                    ruleToWait = new DefaultFlowRule(rulesToDelete.get(lastRule));
+                    ruleToWait = rulesToDelete.get(lastRule).id();
 
                     flowRuleService.removeFlowRules(Iterables.toArray(rulesToDelete, FlowRule.class));
 
                     log.info("There were {} less used rules!", rulesToDelete.size());
-                }
+                //}
             } catch (Exception e) {
-                log.warn("Exception in calculate dependencies task");
+                log.warn("Exception in calculate dependencies task {}", e);
             }
         }
     }
@@ -641,12 +660,7 @@ public class MMSManager implements MMSServices {
         @Override
         public void event(FlowRuleEvent event) {
 
-            TrafficTreatment onosDefaultTreatment = DefaultTrafficTreatment.builder()
-                    .setOutput(PortNumber.CONTROLLER)
-                    .build();
-
-
-            if (!event.subject().treatment().equals(onosDefaultTreatment)) {
+            if (!isONOSDefaultTreatment(event.subject())) {
 
                 if (event.type() == FlowRuleEvent.Type.RULE_UPDATED) {
 
@@ -658,12 +672,19 @@ public class MMSManager implements MMSServices {
 
                         synchronized (flowStatistics) {
                             //int index = 0;
+                            boolean flowRuleIsPresent = false;
                             for (MMSStoreEntry entryToUpdate : flowStatistics) {
                                 if (entryToUpdate.exactMatch(f)) {
                                     entryToUpdate.addPackets(f.packets());
                                     entryToUpdate.calculateExponentialWeightedAverage();
+                                    flowRuleIsPresent = true;
                                     break;
                                 }
+                            }
+                            // In case we miss sth from the device
+                            if (!flowRuleIsPresent) {
+                                MMSStoreEntry flowEntry = new DefaultMMSEntry(f);
+                                flowStatistics.add(flowEntry);
                             }
                         }
                     }
@@ -678,20 +699,20 @@ public class MMSManager implements MMSServices {
 
                     if (mmsDBFlowStatistics.containsKey(f.deviceId())) {
 
-                        List<MMSStoreEntry> flowStatistics = mmsDBFlowStatistics.get(f.deviceId());
-                        flowStatistics.add(flowEntry);
+                        if (!checkFlowInDB(flowEntry)) {
+                            List<MMSStoreEntry> flowStatistics = mmsDBFlowStatistics.get(f.deviceId());
+                            synchronized (flowStatistics) {
+                                flowStatistics.add(flowEntry);
+                            }
+                        }
 
-                    } else {
-                        List<MMSStoreEntry> flowStatistics = Collections.synchronizedList(Lists.newArrayList());
-                        flowStatistics.add(flowEntry);
-                        mmsDBFlowStatistics.put(f.deviceId(), flowStatistics);
                     }
 
                 }
 
                 if (event.type() == FlowRuleEvent.Type.RULE_REMOVED) {
 
-                    FlowEntry f = (FlowEntry) event.subject();
+                    FlowRule f = event.subject();
 
                     if (mmsDBFlowStatistics.containsKey(f.deviceId())) {
 
@@ -699,9 +720,9 @@ public class MMSManager implements MMSServices {
                         synchronized (flowStatistics) {
                             for (int i = 0; i < flowStatistics.size(); i++) {
                                 MMSStoreEntry entryToUpdate = flowStatistics.get(i);
-                                if (entryToUpdate.exactMatch(f)) {
+                                if (entryToUpdate.id().equals(f.id())) {
                                     if (ruleToWait != null) {
-                                        if (ruleToWait.exactMatch(f) && !flowDeletionFinished.get()) {
+                                        if (ruleToWait.equals(f.id()) && !flowDeletionFinished.get()) {
                                             log.info("Last rule deleted");
                                             flowDeletionFinished.set(true);
                                             ruleToWait = null;
@@ -713,7 +734,7 @@ public class MMSManager implements MMSServices {
                         }
                     }
 
-                    if (flowDeletionFinished.get() && mmsDBSwapped.containsKey(f.deviceId())) {
+                    /*if (flowDeletionFinished.get() && mmsDBSwapped.containsKey(f.deviceId())) {
 
                         Set<MMSStoreEntry> entries = mmsDBSwapped.get(f.deviceId());
 
@@ -725,7 +746,7 @@ public class MMSManager implements MMSServices {
                             }
                         }
 
-                    }
+                    }*/
                 }
             }
 
@@ -740,6 +761,14 @@ public class MMSManager implements MMSServices {
                 }
             }
 
+        }
+    }
+
+    private boolean checkFlowInDB(FlowRule flowRule) {
+
+        List<MMSStoreEntry> flowStatistics = mmsDBFlowStatistics.get(flowRule.deviceId());
+        synchronized (flowStatistics) {
+            return flowStatistics.stream().anyMatch(f -> flowRule.id().equals(f.id()));
         }
     }
 
@@ -828,9 +857,6 @@ public class MMSManager implements MMSServices {
         @Override
         public void process(PacketContext context) {
 
-            // Stop processing if the packet has been handled, since we
-            // can't do any more to it.
-
             if (context.isHandled()) {
                 return;
             }
@@ -848,13 +874,10 @@ public class MMSManager implements MMSServices {
 
             FlowRule ruleToCheck = generateFlowRule(context);
 
-            Future<Set<MMSStoreEntry>> futureRulesSwapped = mmsTaskExecutor
-                    .submit(new CheckSwappedRules(ruleToCheck));
+            Set<MMSStoreEntry> rulesSwapped = findSwapped(ruleToCheck);
             try {
-                if(futureRulesSwapped.get() != null) {
+                if(rulesSwapped != null) {
                     //let's install the swapped rules...
-
-                    Set<MMSStoreEntry> rulesSwapped = futureRulesSwapped.get();
 
                     for (MMSStoreEntry entry : rulesSwapped) {
                         FlowRule ruleToApply = new DefaultFlowRule(entry);
@@ -872,31 +895,23 @@ public class MMSManager implements MMSServices {
 
     }
 
-    private class CheckSwappedRules implements Callable<Set<MMSStoreEntry>> {
+    private Set<MMSStoreEntry> findSwapped(FlowRule flowToCheck) {
+        if (mmsDBSwapped.containsKey(flowToCheck.deviceId())) {
 
-        private FlowRule flowToCheck;
+            Set<MMSStoreEntry> ruleSwappedMatch = mmsDBSwapped.get(flowToCheck.deviceId())
+                    .stream().filter(rule -> rule.checkFlowMatch(flowToCheck)).collect(Collectors.toSet());
 
-        public CheckSwappedRules(FlowRule flowToCheck) {
-            this.flowToCheck = flowToCheck;
-        }
-        @Override
-        public Set<MMSStoreEntry> call() throws Exception {
-
-            if (mmsDBSwapped.containsKey(flowToCheck.deviceId())) {
-
-                Set<MMSStoreEntry> ruleSwappedMatch = mmsDBSwapped.get(flowToCheck.deviceId())
-                        .stream().filter(rule -> rule.checkFlowMatch(flowToCheck)).collect(Collectors.toSet());
-
-                if (ruleSwappedMatch.size() > 0) {
-                    mmsDBSwapped.get(flowToCheck.deviceId()).removeAll(ruleSwappedMatch);
-                    List<MMSStoreEntry> listStats = mmsDBFlowStatistics.get(flowToCheck.deviceId());
+            if (ruleSwappedMatch.size() > 0) {
+                mmsDBSwapped.get(flowToCheck.deviceId()).removeAll(ruleSwappedMatch);
+                List<MMSStoreEntry> listStats = mmsDBFlowStatistics.get(flowToCheck.deviceId());
+                synchronized (listStats) {
                     listStats.addAll(ruleSwappedMatch);
-                    return ruleSwappedMatch;
                 }
-
+                return ruleSwappedMatch;
             }
-            return null;
+
         }
+        return null;
     }
 
     private FlowRule generateFlowRule(PacketContext context) {
@@ -954,6 +969,26 @@ public class MMSManager implements MMSServices {
                 .build();
 
         return returnRule;
+    }
+
+    private class InternalDeviceListener implements DeviceListener {
+
+        @Override
+        public void event(DeviceEvent event) {
+
+            switch (event.type()) {
+                case DEVICE_ADDED:
+                    List<MMSStoreEntry> flowStatistics = Collections.synchronizedList(Lists.newArrayList());
+                    mmsDBFlowStatistics.put(event.subject().id(), flowStatistics);
+                    break;
+                case DEVICE_REMOVED:
+                    mmsDBFlowStatistics.remove(event.subject().id());
+                    mmsDBSwapped.remove(event.subject().id());
+                    break;
+                default:
+                    break;
+            }
+        }
     }
 
     @Override

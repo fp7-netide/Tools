@@ -17,7 +17,7 @@
  * limitations under the License.
  *
  * Author:
- * Antonio Marsico (antonio.marsico@create-net.org)
+ * Antonio Marsico (amarsico@fbk.eu)
  */
 package eu.netide.mms.store;
 
@@ -26,6 +26,7 @@ import com.google.common.collect.Sets;
 import org.onlab.packet.IpPrefix;
 import org.onosproject.net.flow.DefaultFlowRule;
 import org.onosproject.net.flow.DefaultTrafficSelector;
+import org.onosproject.net.flow.FlowEntry;
 import org.onosproject.net.flow.FlowRule;
 import org.onosproject.net.flow.TrafficSelector;
 import org.onosproject.net.flow.criteria.Criterion;
@@ -53,6 +54,14 @@ public class DefaultMMSEntry extends DefaultFlowRule implements MMSStoreEntry, C
     public DefaultMMSEntry(FlowRule rule) {
         super(rule);
         this.packets = Lists.newArrayList();
+        this.average = 0.0;
+        this.lastPacket = (long) 0;
+        this.ruleParents = Lists.newArrayList();
+    }
+
+    public DefaultMMSEntry(FlowEntry rule) {
+        super(rule);
+        this.packets = Lists.newArrayList(rule.packets());
         this.average = 0.0;
         this.lastPacket = (long) 0;
         this.ruleParents = Lists.newArrayList();

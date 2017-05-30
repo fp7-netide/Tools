@@ -17,7 +17,7 @@
  * limitations under the License.
  *
  * Author:
- * Antonio Marsico (antonio.marsico@create-net.org)
+ * Antonio Marsico (amarsico@fbk.eu)
  */
 package eu.netide.mms.store;
 

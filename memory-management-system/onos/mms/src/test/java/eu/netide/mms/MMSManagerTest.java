@@ -1,5 +1,8 @@
 /*
- * Copyright 2014 Open Networking Laboratory
+ * Copyright (c) 2016, NetIDE Consortium (Create-Net (CN), Telefonica Investigacion Y Desarrollo SA (TID), Fujitsu
+ * Technology Solutions GmbH (FTS), Thales Communications & Security SAS (THALES), Fundacion Imdea Networks (IMDEA),
+ * Universitaet Paderborn (UPB), Intel Research & Innovation Ireland Ltd (IRIIL), Fraunhofer-Institut für
+ * Produktionstechnologie (IPT), Telcaria Ideas SL (TELCA) )
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -12,6 +15,9 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
+ *
+ * Author:
+ * Antonio Marsico (amarsico@fbk.eu)
  */
 
 package eu.netide.mms;
@@ -60,6 +66,7 @@ import org.onosproject.net.packet.PacketServiceAdapter;
 import org.onosproject.openflow.controller.Dpid;
 import org.onosproject.openflow.controller.OpenFlowController;
 import org.onosproject.openflow.controller.OpenFlowEventListener;
+import org.onosproject.openflow.controller.OpenFlowMessageListener;
 import org.onosproject.openflow.controller.OpenFlowSwitch;
 import org.onosproject.openflow.controller.OpenFlowSwitchListener;
 import org.onosproject.openflow.controller.PacketListener;
@@ -109,6 +116,18 @@ public class MMSManagerTest {
 
     private static final String APP_NAME = "eu.netide.mms";
 
+    public static final ComponentContextAdapter MMS_CONTEXT = new ComponentContextAdapter() {
+        @Override
+        public Dictionary getProperties() {
+            Dictionary<String, String> properties = new Hashtable<>();
+            properties.put("flowDeletionThreshold",
+                           Double.toString(0.2));
+            properties.put("deallocationTimeout",
+                           Integer.toString(5));
+            return properties;
+        }
+    };
+
     @Before
     public void setUp() {
         component = new MMSManager();
@@ -124,16 +143,16 @@ public class MMSManagerTest {
         component.flowRuleService = new TestFlowService();
         component.controller = new TestOpenFlowController();
 
-        ComponentContext mockContext = EasyMock.createMock(ComponentContext.class);
+/*        ComponentContext mockContext = EasyMock.createMock(ComponentContext.class);
         Dictionary<String, String> properties = new Hashtable<>();
         properties.put("flowDeletionThreshold",
                        Double.toString(0.2));
         properties.put("deallocationTimeout",
                        Integer.toString(5));
         expect(mockContext.getProperties()).andReturn(properties);
-        replay(mockContext);
+        replay(mockContext);*/
 
-        component.activate(mockContext);
+        component.activate(MMS_CONTEXT);
 
     }
 
@@ -742,10 +761,6 @@ public class MMSManagerTest {
             return null;
         }
 
-        @Override
-        public void monitorAllEvents(boolean monitor) {
-
-        }
 
         @Override
         public void addListener(OpenFlowSwitchListener listener) {
@@ -754,6 +769,16 @@ public class MMSManagerTest {
 
         @Override
         public void removeListener(OpenFlowSwitchListener listener) {
+
+        }
+
+        @Override
+        public void addMessageListener(OpenFlowMessageListener openFlowMessageListener) {
+
+        }
+
+        @Override
+        public void removeMessageListener(OpenFlowMessageListener openFlowMessageListener) {
 
         }
 

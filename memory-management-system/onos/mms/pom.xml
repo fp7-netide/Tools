@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--
-  ~ Copyright (c) 2014, NetIDE Consortium (Create-Net (CN), Telefonica Investigacion Y Desarrollo SA (TID), Fujitsu
+  ~ Copyright (c) 2016, NetIDE Consortium (Create-Net (CN), Telefonica Investigacion Y Desarrollo SA (TID), Fujitsu
   ~ Technology Solutions GmbH (FTS), Thales Communications & Security SAS (THALES), Fundacion Imdea Networks (IMDEA),
   ~ Universitaet Paderborn (UPB), Intel Research & Innovation Ireland Ltd (IRIIL), Fraunhofer-Institut für
   ~ Produktionstechnologie (IPT), Telcaria Ideas SL (TELCA) )
@@ -9,7 +9,7 @@
   ~ you may not use this file except in compliance with the License.
   ~ You may obtain a copy of the License at
   ~
-  ~    http://www.apache.org/licenses/LICENSE-2.0
+  ~     http://www.apache.org/licenses/LICENSE-2.0
   ~
   ~ Unless required by applicable law or agreed to in writing, software
   ~ distributed under the License is distributed on an "AS IS" BASIS,
@@ -18,9 +18,8 @@
   ~ limitations under the License.
   ~
   ~ Author:
-  ~ Antonio Marsico (antonio.marsico@create-net.org)
-
--->
+  ~ Antonio Marsico (amarsico@fbk.eu)
+  -->
 <project xmlns="http://maven.apache.org/POM/4.0.0"
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
@@ -37,11 +36,19 @@
         <onos.app.origin>NetIDE Project</onos.app.origin>
         <karaf.version>3.0.5</karaf.version>
         <scr.version>1.9.12</scr.version>
-        <onos.version>1.5.1</onos.version>
+        <onos.version>1.9.0</onos.version>
         <osgi.version>4.3.1</osgi.version>
         <onos-maven-plugin.version>1.9</onos-maven-plugin.version>
         <slf4j.version>1.7.13</slf4j.version>
     </properties>
+
+    <parent>
+        <groupId>org.onosproject</groupId>
+        <artifactId>onos-dependencies</artifactId>
+        <version>1.9.0</version>
+        <relativePath/><!-- parent is remote -->
+    </parent>
+
     <dependencies>
         <dependency>
             <groupId>org.onosproject</groupId>
@@ -58,22 +65,22 @@
             <artifactId>onos-api</artifactId>
             <version>${onos.version}</version>
         </dependency>
-        <dependency>
-            <groupId>org.onosproject</groupId>
-            <artifactId>onlab-osgi</artifactId>
-            <version>${onos.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.karaf.shell</groupId>
-            <artifactId>org.apache.karaf.shell.console</artifactId>
-            <version>${karaf.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.felix</groupId>
-            <artifactId>org.apache.felix.scr.annotations</artifactId>
-            <version>${scr.version}</version>
-            <scope>provided</scope>
-        </dependency>
+        <!--        <dependency>
+                    <groupId>org.onosproject</groupId>
+                    <artifactId>onlab-osgi</artifactId>
+                    <version>${onos.version}</version>
+                </dependency>
+                <dependency>
+                    <groupId>org.apache.karaf.shell</groupId>
+                    <artifactId>org.apache.karaf.shell.console</artifactId>
+                    <version>${karaf.version}</version>
+                </dependency>
+                <dependency>
+                    <groupId>org.apache.felix</groupId>
+                    <artifactId>org.apache.felix.scr.annotations</artifactId>
+                    <version>${scr.version}</version>
+                    <scope>provided</scope>
+                </dependency>-->
         <dependency>
             <groupId>org.osgi</groupId>
             <artifactId>org.osgi.core</artifactId>
@@ -88,7 +95,7 @@
         </dependency>
         <dependency>
             <groupId>org.onosproject</groupId>
-            <artifactId>onos-of-api</artifactId>
+            <artifactId>onos-protocols-openflow-api</artifactId>
             <version>${onos.version}</version>
         </dependency>
 
@@ -143,13 +150,11 @@
         <plugin>
             <groupId>org.apache.felix</groupId>
             <artifactId>maven-bundle-plugin</artifactId>
-            <version>3.0.1</version>
             <extensions>true</extensions>
         </plugin>
         <plugin>
             <groupId>org.apache.maven.plugins</groupId>
             <artifactId>maven-compiler-plugin</artifactId>
-            <version>2.5.1</version>
             <configuration>
                 <source>1.8</source>
                 <target>1.8</target>
@@ -177,7 +182,6 @@
         <plugin>
             <groupId>org.onosproject</groupId>
             <artifactId>onos-maven-plugin</artifactId>
-            <version>${onos-maven-plugin.version}</version>
             <executions>
                 <execution>
                     <id>cfg</id>
